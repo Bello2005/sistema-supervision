@@ -17,10 +17,9 @@ const API_BASE_URL = (() => {
     return window.API_BASE_URL;
   }
   
-  // Por defecto, usar ruta relativa (mismo dominio)
+  // Por defecto, usar la URL del backend en Render
   // Para producción con dominio diferente, actualizar esta línea:
-  // return 'https://supervision-backend.onrender.com/api';
-  return '/api';
+  return 'https://supervision-backend-g9ib.onrender.com/api';
 })();
 
 class APIClient {
