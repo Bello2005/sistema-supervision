@@ -5,7 +5,7 @@ Sistema web completo de supervisión en tiempo real con backend integrado para e
 
 ---
 
-## 📋 Descripción del Proyecto
+## Descripción del Proyecto
 
 Sistema tecnológico completo de apoyo a la supervisión de la ejecución en tiempo real que permite:
 
@@ -17,7 +17,7 @@ Sistema tecnológico completo de apoyo a la supervisión de la ejecución en tie
 
 ---
 
-## 🚀 Características Principales
+## Características Principales
 
 ### Dashboard Principal
 - Visualización de estadísticas en tiempo real
@@ -55,7 +55,7 @@ Sistema tecnológico completo de apoyo a la supervisión de la ejecución en tie
 
 ---
 
-## 💻 Tecnologías Utilizadas
+## Tecnologías Utilizadas
 
 ### Frontend
 - **HTML5**: Estructura semántica
@@ -76,7 +76,7 @@ Sistema tecnológico completo de apoyo a la supervisión de la ejecución en tie
 
 ---
 
-## 📦 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 mockup/
@@ -110,7 +110,7 @@ mockup/
 
 ---
 
-## 🌐 Instalación y Uso
+## Instalación y Uso
 
 ### Opción 1: Docker (Recomendado - Más Rápido)
 
@@ -169,9 +169,9 @@ Luego abre: `http://localhost:8080`
 
 ---
 
-## 🚀 Guía Completa de Deployment a Producción
+## Guía Completa de Deployment a Producción
 
-### 📋 Pre-requisitos
+### Pre-requisitos
 
 Antes de desplegar, asegúrate de tener:
 - Cuenta en un servicio de hosting (Railway, Render, DigitalOcean, etc.)
@@ -179,7 +179,7 @@ Antes de desplegar, asegúrate de tener:
 - Git configurado en tu máquina local
 - Conocimiento básico de terminal/CLI
 
-### 🔧 Variables de Entorno Necesarias
+### Variables de Entorno Necesarias
 
 El backend requiere las siguientes variables de entorno (crea un archivo `.env` en `backend/`):
 
@@ -209,7 +209,7 @@ FRONTEND_URL=https://tu-dominio.com
 # AWS_REGION=
 ```
 
-### 🌐 Opción 1: Railway (Recomendado - Más Fácil)
+### Opción 1: Railway (Recomendado - Más Fácil)
 
 Railway es ideal para deployment rápido y fácil.
 
@@ -301,7 +301,7 @@ Railway es ideal para deployment rápido y fácil.
    vercel --prod
    ```
 
-### 🌐 Opción 2: Render
+### Opción 2: Render
 
 Render es otra excelente opción gratuita.
 
@@ -361,7 +361,7 @@ Render es otra excelente opción gratuita.
 2. **Actualizar URL del API en `frontend/js/api.js`**
    - Cambia a la URL de Render: `https://tu-backend.onrender.com/api`
 
-### 🌐 Opción 3: DigitalOcean (VPS Completo)
+### Opción 3: DigitalOcean (VPS Completo)
 
 Para un control total, usa un VPS.
 
@@ -502,7 +502,7 @@ Para un control total, usa un VPS.
     - Edita `/var/www/html/js/api.js`
     - Cambia a: `https://api.tu-dominio.com/api`
 
-### 🔐 Configuración de Seguridad para Producción
+### Configuración de Seguridad para Producción
 
 1. **Cambiar Contraseña del Admin**
    ```sql
@@ -546,7 +546,7 @@ Para un control total, usa un VPS.
    # Añadir: 0 2 * * * /usr/local/bin/backup-db.sh
    ```
 
-### 📊 Checklist de Deployment
+### Checklist de Deployment
 
 Antes de considerar el deployment completo, verifica:
 
@@ -562,7 +562,7 @@ Antes de considerar el deployment completo, verifica:
 - [ ] Logs monitoreados
 - [ ] Pruebas de funcionalidad completadas
 
-### 🐛 Troubleshooting
+### Troubleshooting
 
 #### Backend no inicia
 - Verifica variables de entorno
@@ -579,32 +579,32 @@ Antes de considerar el deployment completo, verifica:
 - Asegúrate de que las migraciones se ejecutaron
 - Revisa logs de PostgreSQL
 
-### 📞 Soporte de Deployment
+### Soporte de Deployment
 
 Si encuentras problemas durante el deployment:
 1. Revisa los logs del servicio
 2. Verifica la documentación de la plataforma
 3. Consulta los issues en GitHub
 
-**📖 Para una guía más detallada, consulta [DEPLOYMENT.md](./DEPLOYMENT.md)**
+Para una guía más detallada, consulta [DEPLOYMENT.md](./DEPLOYMENT.md)
 
-### ⚠️ IMPORTANTE: Hosting Permanente y Gratis
+### IMPORTANTE: Hosting Permanente y Gratis
 
 **Render elimina la base de datos gratuita después de 90 días.** 
 
 Para una solución **100% GRATIS Y PERMANENTE**, consulta:
-- **[GUIA-DEPLOY-GRATIS.md](./GUIA-DEPLOY-GRATIS.md)** - ⭐ **NUEVA GUÍA COMPLETA** - Opciones 100% gratuitas con Neon, Supabase, Railway, Render y Vercel
+- **[GUIA-DEPLOY-GRATIS.md](./GUIA-DEPLOY-GRATIS.md)** - **NUEVA GUÍA COMPLETA** - Opciones 100% gratuitas con Neon, Supabase, Railway, Render y Vercel
 - **[GUIA-NEON-RENDER.md](./GUIA-NEON-RENDER.md)** - Neon (BD) + Render (Backend/Frontend) = **$0/mes permanente**
 - **[GUIA-SUPABASE-RAILWAY.md](./GUIA-SUPABASE-RAILWAY.md)** - Supabase (BD) + Railway (Backend) + Vercel (Frontend)
 - **[GUIA-HOSTING-PERMANENTE.md](./GUIA-HOSTING-PERMANENTE.md)** - Comparación de todas las opciones
 
-**⭐ Mejor opción GRATIS**: **Neon (BD permanente) + Render (Backend) + Vercel (Frontend)** = **$0/mes, sin eliminaciones**
+**Mejor opción GRATIS**: **Neon (BD permanente) + Render (Backend) + Vercel (Frontend)** = **$0/mes, sin eliminaciones**
 
 ---
 
-## 🎯 Funcionalidades Implementadas
+## Funcionalidades Implementadas
 
-### ✅ Backend Completo
+### Backend Completo
 - [x] API REST completa con Express.js
 - [x] Autenticación JWT con restricción solo a administradores
 - [x] Base de datos PostgreSQL con relaciones y triggers
@@ -615,7 +615,7 @@ Para una solución **100% GRATIS Y PERMANENTE**, consulta:
 - [x] Estadísticas y reportes
 - [x] Docker y Docker Compose configurados
 
-### ✅ Frontend Integrado
+### Frontend Integrado
 - [x] Navegación fluida entre páginas
 - [x] Sidebar colapsable con botón de cerrar sesión
 - [x] Sistema de login con validación
@@ -629,7 +629,7 @@ Para una solución **100% GRATIS Y PERMANENTE**, consulta:
 - [x] Diseño 100% responsive
 - [x] Soporte para múltiples plataformas de reunión (Jitsi, Google Meet, Zoom, Teams, Webex, GoToMeeting)
 
-### ✅ Características Especiales
+### Características Especiales
 - [x] Dashboard con datos reales del backend
 - [x] Tarjetas de eventos con datos dinámicos
 - [x] Calendario que muestra eventos reales de la base de datos
@@ -641,17 +641,17 @@ Para una solución **100% GRATIS Y PERMANENTE**, consulta:
 
 ---
 
-## 📱 Compatibilidad
+## Compatibilidad
 
-- ✅ Chrome 90+
-- ✅ Firefox 88+
-- ✅ Safari 14+
-- ✅ Edge 90+
-- ✅ Dispositivos móviles (iOS/Android)
+- Chrome 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+
+- Dispositivos móviles (iOS/Android)
 
 ---
 
-## 🎨 Personalización
+## Personalización
 
 ### Cambiar Colores
 
@@ -675,7 +675,7 @@ Copia la estructura de cualquier página existente y modifica el contenido segú
 
 ---
 
-## 📊 API Endpoints
+## API Endpoints
 
 ### Autenticación
 - `POST /api/auth/register` - Registro de usuarios (solo admin puede acceder)
@@ -708,7 +708,7 @@ Copia la estructura de cualquier página existente y modifica el contenido segú
 
 ---
 
-## 🔒 Seguridad y Autenticación
+## Seguridad y Autenticación
 
 ### Sistema de Autenticación
 - **JWT Tokens**: Autenticación basada en tokens JWT
@@ -732,53 +732,53 @@ Copia la estructura de cualquier página existente y modifica el contenido segú
 
 ---
 
-## 🚀 Cambios Recientes (Última Actualización)
+## Cambios Recientes (Última Actualización)
 
 ### Autenticación y Acceso
-- ✅ **Login restringido solo a administradores**: Solo usuarios con rol `admin` pueden acceder al sistema
-- ✅ **Botón de cerrar sesión**: Añadido en todas las vistas del sidebar (Dashboard, Registro de Evidencias, Listados, Supervisión en Vivo, Eventos, Ayuda, Configuración)
-- ✅ **Validación de roles**: El backend valida el rol antes de permitir el login
-- ✅ **Mensaje de error claro**: El login muestra mensaje específico si el usuario no es admin
+- **Login restringido solo a administradores**: Solo usuarios con rol `admin` pueden acceder al sistema
+- **Botón de cerrar sesión**: Añadido en todas las vistas del sidebar (Dashboard, Registro de Evidencias, Listados, Supervisión en Vivo, Eventos, Ayuda, Configuración)
+- **Validación de roles**: El backend valida el rol antes de permitir el login
+- **Mensaje de error claro**: El login muestra mensaje específico si el usuario no es admin
 
 ### Integración Frontend-Backend
-- ✅ **Todas las vistas conectadas**: Dashboard, Registro de Evidencias, Listados, Supervisión en Vivo y Eventos completamente integradas
-- ✅ **Datos reales**: Todas las tarjetas, calendarios y listas muestran datos de la base de datos PostgreSQL
-- ✅ **Gestión de archivos**: Subir, descargar y eliminar archivos de evidencias con almacenamiento real
-- ✅ **Calendario dinámico**: Muestra eventos reales con navegación entre meses y resaltado de días con eventos
-- ✅ **Estadísticas precisas**: Contadores de participantes y eventos calculados directamente desde la base de datos
-- ✅ **Modales CRUD completos**: Ver, editar, compartir y descargar evidencias con datos del backend
-- ✅ **Gestión de participantes**: Agregar participantes a eventos con búsqueda de usuarios
+- **Todas las vistas conectadas**: Dashboard, Registro de Evidencias, Listados, Supervisión en Vivo y Eventos completamente integradas
+- **Datos reales**: Todas las tarjetas, calendarios y listas muestran datos de la base de datos PostgreSQL
+- **Gestión de archivos**: Subir, descargar y eliminar archivos de evidencias con almacenamiento real
+- **Calendario dinámico**: Muestra eventos reales con navegación entre meses y resaltado de días con eventos
+- **Estadísticas precisas**: Contadores de participantes y eventos calculados directamente desde la base de datos
+- **Modales CRUD completos**: Ver, editar, compartir y descargar evidencias con datos del backend
+- **Gestión de participantes**: Agregar participantes a eventos con búsqueda de usuarios
 
 ### Mejoras de UI/UX
-- ✅ **Diseño responsive mejorado**: Optimizado para móvil, tablet y desktop en todas las vistas
-- ✅ **Sistema de toasts**: Notificaciones estilo Bootstrap en todas las vistas con z-index optimizado
-- ✅ **Modales interactivos**: Modales para ver, editar, compartir y descargar evidencias
-- ✅ **Centro de ayuda funcional**: Botones de Email (`mailto:`) y Llamar Soporte (`tel:`) operativos
-- ✅ **Eliminación de elementos obsoletos**: Removidos barra de búsqueda y dropdown de perfil de todas las vistas
-- ✅ **Mejoras visuales**: Tarjetas con gradientes, hover effects y sombras mejoradas
+- **Diseño responsive mejorado**: Optimizado para móvil, tablet y desktop en todas las vistas
+- **Sistema de toasts**: Notificaciones estilo Bootstrap en todas las vistas con z-index optimizado
+- **Modales interactivos**: Modales para ver, editar, compartir y descargar evidencias
+- **Centro de ayuda funcional**: Botones de Email (`mailto:`) y Llamar Soporte (`tel:`) operativos
+- **Eliminación de elementos obsoletos**: Removidos barra de búsqueda y dropdown de perfil de todas las vistas
+- **Mejoras visuales**: Tarjetas con gradientes, hover effects y sombras mejoradas
 
 ### Soporte de Reuniones
-- ✅ **Múltiples plataformas**: Soporte para Jitsi, Google Meet, Zoom, Teams, Webex, GoToMeeting
-- ✅ **Detección automática**: El sistema detecta y muestra la plataforma automáticamente
-- ✅ **Integración con eventos**: Los eventos pueden tener enlaces de reunión asociados
-- ✅ **Renderizado condicional**: Iframes para plataformas compatibles, botones para otras
-- ✅ **Supervisión en tiempo real**: Vista mejorada con indicadores de transmisiones activas
+- **Múltiples plataformas**: Soporte para Jitsi, Google Meet, Zoom, Teams, Webex, GoToMeeting
+- **Detección automática**: El sistema detecta y muestra la plataforma automáticamente
+- **Integración con eventos**: Los eventos pueden tener enlaces de reunión asociados
+- **Renderizado condicional**: Iframes para plataformas compatibles, botones para otras
+- **Supervisión en tiempo real**: Vista mejorada con indicadores de transmisiones activas
 
 ### Backend y Base de Datos
-- ✅ **API REST completa**: 20+ endpoints documentados y funcionales
-- ✅ **Validación robusta**: Express Validator en todas las rutas
-- ✅ **Gestión de archivos**: Multer configurado para uploads múltiples
-- ✅ **Cálculo de participantes**: Consultas optimizadas que cuentan directamente desde `event_participants`
-- ✅ **Limpieza de datos**: Scripts para eliminar datos de prueba
-- ✅ **Migraciones**: Sistema de migraciones para esquema de base de datos
+- **API REST completa**: 20+ endpoints documentados y funcionales
+- **Validación robusta**: Express Validator en todas las rutas
+- **Gestión de archivos**: Multer configurado para uploads múltiples
+- **Cálculo de participantes**: Consultas optimizadas que cuentan directamente desde `event_participants`
+- **Limpieza de datos**: Scripts para eliminar datos de prueba
+- **Migraciones**: Sistema de migraciones para esquema de base de datos
 
 ### Documentación
-- ✅ **README completo**: Documentación actualizada con todas las funcionalidades
-- ✅ **Guía de deployment**: Instrucciones detalladas para Railway, Render y DigitalOcean
-- ✅ **Checklist de producción**: Lista de verificación antes de deploy
-- ✅ **Troubleshooting**: Guía de solución de problemas comunes
+- **README completo**: Documentación actualizada con todas las funcionalidades
+- **Guía de deployment**: Instrucciones detalladas para Railway, Render y DigitalOcean
+- **Checklist de producción**: Lista de verificación antes de deploy
+- **Troubleshooting**: Guía de solución de problemas comunes
 
-## 🚀 Roadmap (Próximas Versiones)
+## Roadmap (Próximas Versiones)
 
 ### Versión 2.1 - Mejoras Adicionales
 - [ ] Notificaciones push en tiempo real
@@ -795,7 +795,7 @@ Copia la estructura de cualquier página existente y modifica el contenido segú
 
 ---
 
-## 👥 Contribución
+## Contribución
 
 Si deseas contribuir al proyecto:
 
@@ -807,13 +807,13 @@ Si deseas contribuir al proyecto:
 
 ---
 
-## 📄 Licencia
+## Licencia
 
 Este proyecto está bajo la Licencia MIT - ver el archivo LICENSE para más detalles.
 
 ---
 
-## 📞 Contacto y Soporte
+## Contacto y Soporte
 
 Para preguntas, sugerencias o reportar problemas:
 
@@ -822,7 +822,7 @@ Para preguntas, sugerencias o reportar problemas:
 
 ---
 
-## 🙏 Agradecimientos
+## Agradecimientos
 
 - Diseñado para el RESGUARDO INDÍGENA CATRÚ, DUBASA Y ANCOSÓ
 - Resolución N° 215 de 2025
@@ -830,7 +830,7 @@ Para preguntas, sugerencias o reportar problemas:
 
 ---
 
-## 📝 Comandos Útiles
+## Comandos Útiles
 
 ```bash
 # Ver estado de servicios Docker
@@ -856,4 +856,4 @@ docker-compose exec postgres psql -U postgres -d supervision_db
 
 **Versión**: 2.0.0
 **Última actualización**: Noviembre 2025
-**Estado**: ✅ Sistema Completo - Backend + Frontend Integrados - Listo para Producción
+**Estado**: Sistema Completo - Backend + Frontend Integrados - Listo para Producción
