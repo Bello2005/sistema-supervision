@@ -1,0 +1,44 @@
+name: Neon Database Workflow
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: ./backend
+        run: npm ci
+      
+      - name: Run migrations (if needed)
+        working-directory: ./backend
+        env:
+          DB_HOST: ${{ secrets.NEON_DB_HOST }}
+          DB_PORT: ${{ secrets.NEON_DB_PORT }}
+          DB_NAME: ${{ secrets.NEON_DB_NAME }}
+          DB_USER: ${{ secrets.NEON_DB_USER }}
+          DB_PASSWORD: ${{ secrets.NEON_DB_PASSWORD }}
+        run: |
+          echo "Database connection configured"
+          # npm run migrate  # Uncomment if you want to run migrations in CI
+
