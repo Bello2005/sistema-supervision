@@ -1,78 +1,83 @@
-# Sistema de Supervisión - RES N° 215 DE 2025
-## RESGUARDO INDÍGENA CATRÚ, DUBASA Y ANCOSÓ
+# Sistema de Supervisión y Gestión de Evidencias
 
-Sistema web completo de supervisión en tiempo real con backend integrado para el registro de evidencias, listados y registros entregables de eventos de capacitación y procesos formativos.
-
----
-
-## Descripción del Proyecto
-
-Sistema tecnológico completo de apoyo a la supervisión de la ejecución en tiempo real que permite:
-
-- **Registro de Evidencias**: Carga y administración de evidencias fotográficas, videos, documentos y registros de asistencia con almacenamiento en servidor
-- **Listados y Registros Entregables**: Gestión completa, edición, visualización y exportación de todos los registros y documentos generados
-- **Supervisión en Tiempo Real**: Monitoreo en vivo de eventos y capacitaciones con soporte para múltiples plataformas de reunión (Jitsi, Google Meet, Zoom, Teams, etc.)
-- **Eventos de Capacitación**: Administración completa de eventos, talleres, seminarios y procesos formativos con gestión de participantes
-- **Autenticación y Seguridad**: Sistema de login con JWT, acceso restringido solo a administradores
+## Resolución N° 215 de 2025
+### Resguardo Indígena Catrú, Dubasa y Ancósó
 
 ---
 
-## Características Principales
+## Resumen Ejecutivo
 
-### Dashboard Principal
-- Visualización de estadísticas en tiempo real
-- Gráficos de actividad
-- Feed de actividad reciente
-- Accesos rápidos a todas las funcionalidades
+Sistema integral de supervisión en tiempo real diseñado para la gestión, registro y monitoreo de evidencias, eventos de capacitación y procesos formativos. Plataforma web completa con arquitectura cliente-servidor que proporciona herramientas avanzadas para la administración documental, seguimiento de actividades y supervisión remota de eventos.
 
-### Registro de Evidencias
-- Carga de archivos mediante drag & drop
-- Vista previa de imágenes y videos
-- Formularios detallados con validación
-- Sistema de etiquetas y categorización
+---
+
+## Descripción del Sistema
+
+El Sistema de Supervisión es una solución tecnológica empresarial que facilita la gestión integral de evidencias y eventos de capacitación mediante una interfaz web moderna y una API REST robusta. El sistema permite la captura, almacenamiento, organización y análisis de evidencias documentales, fotográficas y audiovisuales, así como la administración completa del ciclo de vida de eventos formativos.
+
+### Capacidades Principales
+
+**Gestión de Evidencias**
+- Carga y administración de archivos multimedia (imágenes, videos, documentos)
+- Sistema de categorización y etiquetado avanzado
 - Geolocalización de evidencias
+- Almacenamiento seguro en servidor con gestión de metadatos
+- Exportación de registros en múltiples formatos
 
-### Listados y Registros
-- Tabla avanzada con múltiples filtros
-- Búsqueda en tiempo real
-- Selección múltiple para operaciones masivas
-- Exportación a Excel, PDF, CSV y ZIP
-- Paginación inteligente
+**Administración de Eventos**
+- Gestión completa del ciclo de vida de eventos de capacitación
+- Calendario interactivo con visualización de eventos programados
+- Sistema de gestión de participantes
+- Seguimiento de estados (Programado, En curso, Completado)
+- Integración con plataformas de videoconferencia
 
-### Supervisión en Tiempo Real
-- Visualización de 8 transmisiones simultáneas
-- Indicadores de EN VIVO
-- Controles de grabación
-- Estadísticas de red y calidad
-- Timeline de actividad
+**Supervisión en Tiempo Real**
+- Monitoreo simultáneo de múltiples transmisiones
+- Integración con plataformas de reunión (Jitsi, Google Meet, Zoom, Microsoft Teams, Webex, GoToMeeting)
+- Indicadores de estado en vivo
+- Métricas de calidad de transmisión
 
-### Eventos y Capacitación
-- Calendario interactivo
-- Vista grid y lista alternables
-- Filtros por estado (Programado, En curso, Completado)
-- Gestión de participantes
-- Creación y edición de eventos
+**Análisis y Reportes**
+- Dashboard ejecutivo con métricas en tiempo real
+- Estadísticas de participación y asistencia
+- Generación de reportes exportables
+- Visualización de tendencias y análisis de datos
 
 ---
 
-## Tecnologías Utilizadas
+## Arquitectura Técnica
 
-### Frontend
-- **HTML5**: Estructura semántica
-- **Tailwind CSS**: Framework de estilos modernos y responsive
-- **Alpine.js**: Framework JavaScript reactivo y ligero
-- **Font Awesome**: Biblioteca de iconos
-- **Google Fonts (Inter)**: Tipografía profesional
+### Stack Tecnológico
 
-### Backend
-- **Node.js 18+**: Runtime de JavaScript
-- **Express.js**: Framework web para API REST
-- **PostgreSQL 15**: Base de datos relacional
-- **JWT**: Autenticación basada en tokens
-- **Bcrypt**: Encriptación de contraseñas
-- **Multer**: Manejo de carga de archivos
-- **Express Validator**: Validación de datos
-- **Docker & Docker Compose**: Containerización
+**Frontend**
+- HTML5 (Estructura semántica y accesibilidad)
+- Tailwind CSS 3.x (Framework de diseño utilitario)
+- Alpine.js (Framework JavaScript reactivo y ligero)
+- Font Awesome 6.x (Biblioteca de iconografía)
+- Google Fonts - Inter (Tipografía corporativa)
+
+**Backend**
+- Node.js 18+ LTS (Runtime de JavaScript)
+- Express.js 4.x (Framework web para API REST)
+- PostgreSQL 15 (Sistema de gestión de bases de datos relacional)
+- JSON Web Tokens (JWT) - Autenticación basada en tokens
+- Bcrypt - Algoritmo de hash para contraseñas
+- Multer - Middleware para manejo de carga de archivos
+- Express Validator - Validación y sanitización de datos de entrada
+
+**Infraestructura**
+- Docker & Docker Compose - Containerización y orquestación
+- Nginx - Servidor web y proxy reverso
+
+### Arquitectura de Datos
+
+El sistema utiliza una arquitectura de base de datos relacional con las siguientes entidades principales:
+
+- **Users**: Gestión de usuarios y autenticación
+- **Events**: Eventos de capacitación y procesos formativos
+- **Evidences**: Registro de evidencias documentales
+- **Event Participants**: Relación muchos-a-muchos entre eventos y participantes
+- **Evidence Files**: Archivos asociados a evidencias
 
 ---
 
@@ -84,776 +89,366 @@ mockup/
 │   ├── index.html                      # Dashboard principal
 │   ├── registro-evidencias.html        # Módulo de registro de evidencias
 │   ├── listados.html                   # Listados y registros entregables
-│   ├── supervision-tiempo-real.html    # Supervisión en vivo
+│   ├── supervision-tiempo-real.html    # Supervisión en tiempo real
 │   ├── eventos-capacitacion.html       # Gestión de eventos
-│   ├── login.html                      # Página de login
-│   ├── ayuda.html                      # Centro de ayuda
-│   ├── configuracion.html              # Configuración
+│   ├── login.html                      # Autenticación de usuarios
+│   ├── ayuda.html                      # Centro de ayuda y soporte
+│   ├── configuracion.html              # Configuración del sistema
 │   └── js/
 │       └── api.js                      # Cliente API para comunicación con backend
 ├── backend/
 │   ├── src/
 │   │   ├── server.js                   # Servidor Express principal
-│   │   ├── controllers/                # Controladores (Auth, Events, Evidences)
+│   │   ├── controllers/                # Lógica de negocio (Auth, Events, Evidences)
 │   │   ├── models/                     # Modelos de datos (User, Event, Evidence)
-│   │   ├── routes/                     # Rutas API
+│   │   ├── routes/                     # Definición de rutas API
 │   │   ├── middlewares/                # Middlewares (Auth, Upload, Validator)
-│   │   ├── config/                     # Configuración de BD
+│   │   ├── config/                     # Configuración de base de datos
 │   │   └── database/                   # Schema, migraciones y seeds
-│   ├── uploads/                        # Archivos subidos
-│   ├── package.json
-│   └── Dockerfile
-├── docker-compose.yml                  # Configuración Docker
-├── nginx.conf                          # Configuración Nginx
-└── README.md                           # Este archivo
+│   ├── uploads/                        # Almacenamiento de archivos subidos
+│   ├── package.json                    # Dependencias y scripts
+│   └── Dockerfile                      # Configuración de contenedor Docker
+├── docker-compose.yml                  # Orquestación de servicios
+├── nginx.conf                         # Configuración de servidor web
+└── README.md                          # Documentación del proyecto
 ```
 
 ---
 
-## Instalación y Uso
+## Instalación y Configuración
 
-### Opción 1: Docker (Recomendado - Más Rápido)
+### Requisitos del Sistema
+
+- Node.js 18.0.0 o superior
+- PostgreSQL 15.0 o superior
+- Docker 20.10+ y Docker Compose 2.0+ (opcional, para instalación containerizada)
+- Navegador web moderno (Chrome 90+, Firefox 88+, Safari 14+, Edge 90+)
+
+### Instalación mediante Docker (Recomendado)
+
+La instalación mediante Docker proporciona un entorno aislado y reproducible:
 
 ```bash
-# 1. Clonar o descargar el proyecto
+# 1. Clonar el repositorio
+git clone <repository-url>
 cd mockup
 
-# 2. Crear archivo de variables de entorno
+# 2. Configurar variables de entorno
 cp backend/.env.example backend/.env
+# Editar backend/.env con las credenciales apropiadas
 
-# 3. Levantar todos los servicios
+# 3. Iniciar servicios
 docker-compose up -d
 
-# 4. Migrar base de datos
+# 4. Ejecutar migraciones de base de datos
 docker-compose exec backend npm run migrate
 
-# 5. Cargar datos iniciales
+# 5. Cargar datos iniciales (opcional)
 docker-compose exec backend npm run seed
-
-# 6. ¡Listo! Acceder a:
-# Frontend: http://localhost:8080
-# Backend API: http://localhost:3000
 ```
 
-### Opción 2: Instalación Manual
+El sistema estará disponible en:
+- Frontend: `http://localhost:8080`
+- Backend API: `http://localhost:3000`
 
-#### Backend
+### Instalación Manual
+
+#### Configuración del Backend
+
 ```bash
 cd backend
 npm install
 cp .env.example .env
-# Editar .env con tus credenciales de PostgreSQL
+# Configurar variables de entorno en .env
 npm run migrate
 npm run seed
-npm run dev  # Servidor en http://localhost:3000
+npm run dev
 ```
 
-#### Frontend
+#### Configuración del Frontend
+
 ```bash
 cd frontend
-# Usando Python 3
+# Opción 1: Servidor HTTP de Python
 python -m http.server 8080
 
-# O usando Node.js (http-server)
+# Opción 2: Servidor HTTP de Node.js
 npx http-server -p 8080
 ```
 
-Luego abre: `http://localhost:8080`
+### Variables de Entorno
 
-### Credenciales de Acceso
+El archivo `.env` del backend debe contener las siguientes variables:
 
-**IMPORTANTE**: Solo usuarios con rol de **administrador** pueden acceder al sistema.
+```env
+# Base de Datos
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=supervision_db
+DB_USER=postgres
+DB_PASSWORD=tu_contraseña_segura
+
+# Autenticación JWT
+JWT_SECRET=tu_secret_key_muy_segura_minimo_32_caracteres
+JWT_EXPIRES_IN=7d
+
+# Servidor
+NODE_ENV=development
+PORT=3000
+
+# CORS
+FRONTEND_URL=http://localhost:8080
+```
+
+### Credenciales de Acceso Inicial
+
+**Importante**: El sistema restringe el acceso únicamente a usuarios con rol de administrador.
 
 - **Email**: `admin@supervision.com`
 - **Contraseña**: `password123`
 
+**Recomendación de Seguridad**: Cambiar la contraseña inmediatamente después de la primera autenticación.
+
 ---
 
-## Guía Completa de Deployment a Producción
-
-### Pre-requisitos
-
-Antes de desplegar, asegúrate de tener:
-- Cuenta en un servicio de hosting (Railway, Render, DigitalOcean, etc.)
-- Dominio propio (opcional pero recomendado)
-- Git configurado en tu máquina local
-- Conocimiento básico de terminal/CLI
-
-### Variables de Entorno Necesarias
-
-El backend requiere las siguientes variables de entorno (crea un archivo `.env` en `backend/`):
-
-```env
-# Base de Datos PostgreSQL
-DB_HOST=tu-host-postgresql
-DB_PORT=5432
-DB_NAME=supervision_db
-DB_USER=tu-usuario
-DB_PASSWORD=tu-contraseña-segura
-
-# JWT
-JWT_SECRET=tu-secret-key-muy-segura-y-larga-minimo-32-caracteres
-JWT_EXPIRES_IN=7d
-
-# Servidor
-NODE_ENV=production
-PORT=3000
-
-# CORS (URL de tu frontend en producción)
-FRONTEND_URL=https://tu-dominio.com
-
-# Opcional: Almacenamiento en la nube (AWS S3, etc.)
-# AWS_ACCESS_KEY_ID=
-# AWS_SECRET_ACCESS_KEY=
-# AWS_BUCKET_NAME=
-# AWS_REGION=
-```
-
-### Opción 1: Railway (Recomendado - Más Fácil)
-
-Railway es ideal para deployment rápido y fácil.
-
-#### Backend + Base de Datos en Railway
-
-1. **Crear cuenta en Railway**
-   - Ve a [railway.app](https://railway.app)
-   - Inicia sesión con GitHub
-
-2. **Crear Proyecto**
-   - Click en "New Project"
-   - Selecciona "Deploy from GitHub repo"
-   - Conecta tu repositorio
-
-3. **Agregar Base de Datos PostgreSQL**
-   - En tu proyecto, click "New"
-   - Selecciona "Database" → "PostgreSQL"
-   - Railway creará automáticamente la base de datos
-
-4. **Desplegar Backend**
-   - Click "New" → "GitHub Repo"
-   - Selecciona tu repositorio
-   - Railway detectará automáticamente el backend
-   - Configura el Root Directory: `backend`
-   - Configura el Start Command: `npm start`
-
-5. **Configurar Variables de Entorno**
-   - Ve a la sección "Variables" del servicio backend
-   - Añade todas las variables de entorno necesarias
-   - **IMPORTANTE**: Usa las variables de conexión de la base de datos que Railway proporciona:
-     ```
-     DB_HOST=${{Postgres.PGHOST}}
-     DB_PORT=${{Postgres.PGPORT}}
-     DB_NAME=${{Postgres.PGDATABASE}}
-     DB_USER=${{Postgres.PGUSER}}
-     DB_PASSWORD=${{Postgres.PGPASSWORD}}
-     ```
-   - Añade también:
-     ```
-     JWT_SECRET=tu-secret-key-muy-segura
-     NODE_ENV=production
-     PORT=3000
-     FRONTEND_URL=https://tu-frontend.vercel.app
-     ```
-
-6. **Ejecutar Migraciones**
-   - Ve a la sección "Deployments"
-   - Click en el deployment más reciente
-   - Abre la terminal
-   - Ejecuta: `npm run migrate`
-   - Ejecuta: `npm run seed` (opcional, solo para datos iniciales)
-
-7. **Obtener URL del Backend**
-   - Railway generará una URL como: `https://tu-backend.railway.app`
-   - Copia esta URL
-
-#### Frontend en Vercel/Netlify
-
-1. **Desplegar en Vercel**
-   ```bash
-   # Instalar Vercel CLI
-   npm i -g vercel
-   
-   # Desde la carpeta del proyecto
-   cd frontend
-   vercel
-   
-   # Seguir las instrucciones
-   # Cuando pregunte por el build command, deja vacío
-   # Cuando pregunte por el output directory, deja vacío
-   ```
-
-2. **Actualizar URL del API**
-   - Edita `frontend/js/api.js`
-   - Cambia la línea:
-     ```javascript
-     const API_BASE_URL = window.location.origin.includes('localhost')
-       ? 'http://localhost:3000/api'
-       : 'https://supervision-backend.onrender.com/api';
-     ```
-
-3. **Configurar Variables de Entorno en Vercel** (si es necesario)
-   - Ve a tu proyecto en Vercel
-   - Settings → Environment Variables
-   - Añade: `VITE_API_URL=https://supervision-backend.onrender.com/api`
-
-4. **Redeploy**
-   ```bash
-   vercel --prod
-   ```
-
-### Opción 2: Render
-
-Render es otra excelente opción gratuita.
-
-#### Backend en Render
-
-1. **Crear cuenta en Render**
-   - Ve a [render.com](https://render.com)
-   - Inicia sesión con GitHub
-
-2. **Crear Base de Datos PostgreSQL**
-   - Dashboard → "New" → "PostgreSQL"
-   - Nombre: `supervision-db`
-   - Plan: Free (o pago según necesidades)
-   - Anota las credenciales de conexión
-
-3. **Crear Web Service (Backend)**
-   - Dashboard → "New" → "Web Service"
-   - Conecta tu repositorio de GitHub
-   - Configuración:
-     - **Name**: `supervision-backend`
-     - **Environment**: `Node`
-     - **Build Command**: `cd backend && npm install`
-     - **Start Command**: `cd backend && npm start`
-     - **Root Directory**: `backend`
-
-4. **Configurar Variables de Entorno**
-   - En la sección "Environment" del servicio:
-     ```
-     DB_HOST=<host-de-render-postgres>
-     DB_PORT=5432
-     DB_NAME=<nombre-de-la-bd>
-     DB_USER=<usuario>
-     DB_PASSWORD=<contraseña>
-     JWT_SECRET=tu-secret-key-muy-segura
-     NODE_ENV=production
-     PORT=3000
-     FRONTEND_URL=https://tu-frontend.netlify.app
-     ```
-
-5. **Ejecutar Migraciones**
-   - Ve a "Shell" en Render
-   - Ejecuta: `npm run migrate`
-   - Ejecuta: `npm run seed` (opcional)
-
-#### Frontend en Netlify
-
-1. **Desplegar en Netlify**
-   ```bash
-   # Instalar Netlify CLI
-   npm i -g netlify-cli
-   
-   # Desde la carpeta del proyecto
-   cd frontend
-   netlify deploy --prod
-   ```
-
-2. **Actualizar URL del API en `frontend/js/api.js`**
-   - Cambia a la URL de Render: `https://tu-backend.onrender.com/api`
-
-### Opción 3: DigitalOcean (VPS Completo)
-
-Para un control total, usa un VPS.
-
-#### Configuración del Servidor
-
-1. **Crear Droplet**
-   - Ve a [digitalocean.com](https://digitalocean.com)
-   - Crea un Droplet (Ubuntu 22.04, mínimo 2GB RAM)
-   - Añade tu SSH key
-
-2. **Conectar al Servidor**
-   ```bash
-   ssh root@tu-ip-servidor
-   ```
-
-3. **Instalar Dependencias**
-   ```bash
-   # Actualizar sistema
-   apt update && apt upgrade -y
-   
-   # Instalar Node.js 18
-   curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-   apt install -y nodejs
-   
-   # Instalar PostgreSQL
-   apt install -y postgresql postgresql-contrib
-   
-   # Instalar Nginx
-   apt install -y nginx
-   
-   # Instalar PM2 (process manager)
-   npm install -g pm2
-   ```
-
-4. **Configurar PostgreSQL**
-   ```bash
-   # Cambiar a usuario postgres
-   sudo -u postgres psql
-   
-   # Crear base de datos y usuario
-   CREATE DATABASE supervision_db;
-   CREATE USER supervision_user WITH PASSWORD 'tu-contraseña-segura';
-   GRANT ALL PRIVILEGES ON DATABASE supervision_db TO supervision_user;
-   \q
-   ```
-
-5. **Clonar y Configurar Backend**
-   ```bash
-   # Clonar repositorio
-   cd /var/www
-   git clone https://github.com/tu-usuario/tu-repo.git supervision
-   cd supervision/backend
-   
-   # Instalar dependencias
-   npm install --production
-   
-   # Crear archivo .env
-   nano .env
-   # Pegar variables de entorno
-   
-   # Ejecutar migraciones
-   npm run migrate
-   npm run seed
-   ```
-
-6. **Iniciar Backend con PM2**
-   ```bash
-   pm2 start src/server.js --name supervision-api
-   pm2 save
-   pm2 startup
-   ```
-
-7. **Configurar Nginx para Backend**
-   ```bash
-   nano /etc/nginx/sites-available/supervision-api
-   ```
-   
-   Contenido:
-   ```nginx
-   server {
-       listen 80;
-       server_name api.tu-dominio.com;
-       
-       location / {
-           proxy_pass http://localhost:3000;
-           proxy_http_version 1.1;
-           proxy_set_header Upgrade $http_upgrade;
-           proxy_set_header Connection 'upgrade';
-           proxy_set_header Host $host;
-           proxy_cache_bypass $http_upgrade;
-       }
-   }
-   ```
-   
-   ```bash
-   ln -s /etc/nginx/sites-available/supervision-api /etc/nginx/sites-enabled/
-   nginx -t
-   systemctl restart nginx
-   ```
-
-8. **Configurar Nginx para Frontend**
-   ```bash
-   # Copiar archivos frontend
-   cp -r /var/www/supervision/frontend/* /var/www/html/
-   
-   # Configurar Nginx
-   nano /etc/nginx/sites-available/supervision-frontend
-   ```
-   
-   Contenido:
-   ```nginx
-   server {
-       listen 80;
-       server_name tu-dominio.com www.tu-dominio.com;
-       root /var/www/html;
-       index index.html;
-       
-       location / {
-           try_files $uri $uri/ /index.html;
-       }
-   }
-   ```
-   
-   ```bash
-   ln -s /etc/nginx/sites-available/supervision-frontend /etc/nginx/sites-enabled/
-   nginx -t
-   systemctl restart nginx
-   ```
-
-9. **Configurar SSL con Let's Encrypt**
-   ```bash
-   apt install -y certbot python3-certbot-nginx
-   certbot --nginx -d tu-dominio.com -d www.tu-dominio.com
-   certbot --nginx -d api.tu-dominio.com
-   ```
-
-10. **Actualizar URL del API en Frontend**
-    - Edita `/var/www/html/js/api.js`
-    - Cambia a: `https://api.tu-dominio.com/api`
-
-### Configuración de Seguridad para Producción
-
-1. **Cambiar Contraseña del Admin**
-   ```sql
-   -- Conectarse a la base de datos
-   psql -U supervision_user -d supervision_db
-   
-   -- Actualizar contraseña (se encriptará automáticamente)
-   UPDATE users SET password = '$2b$10$nueva_contraseña_encriptada' WHERE email = 'admin@supervision.com';
-   ```
-
-2. **Configurar Firewall**
-   ```bash
-   ufw allow 22/tcp
-   ufw allow 80/tcp
-   ufw allow 443/tcp
-   ufw enable
-   ```
-
-3. **Configurar Backups Automáticos**
-   ```bash
-   # Crear script de backup
-   nano /usr/local/bin/backup-db.sh
-   ```
-   
-   Contenido:
-   ```bash
-   #!/bin/bash
-   BACKUP_DIR="/var/backups/postgresql"
-   DATE=$(date +%Y%m%d_%H%M%S)
-   mkdir -p $BACKUP_DIR
-   pg_dump -U supervision_user supervision_db > $BACKUP_DIR/backup_$DATE.sql
-   # Mantener solo últimos 7 días
-   find $BACKUP_DIR -name "backup_*.sql" -mtime +7 -delete
-   ```
-   
-   ```bash
-   chmod +x /usr/local/bin/backup-db.sh
-   
-   # Añadir a crontab (diario a las 2 AM)
-   crontab -e
-   # Añadir: 0 2 * * * /usr/local/bin/backup-db.sh
-   ```
-
-### Checklist de Deployment
-
-Antes de considerar el deployment completo, verifica:
-
-- [ ] Variables de entorno configuradas correctamente
-- [ ] Base de datos migrada (`npm run migrate`)
-- [ ] Datos iniciales cargados (`npm run seed`)
-- [ ] URL del API actualizada en `frontend/js/api.js`
-- [ ] SSL/HTTPS configurado
-- [ ] Dominio apuntando correctamente
-- [ ] Firewall configurado
-- [ ] Backups automáticos configurados
-- [ ] Contraseña del admin cambiada
-- [ ] Logs monitoreados
-- [ ] Pruebas de funcionalidad completadas
-
-### Troubleshooting
-
-#### Backend no inicia
-- Verifica variables de entorno
-- Revisa logs: `pm2 logs supervision-api` o en Railway/Render
-- Verifica conexión a base de datos
-
-#### Frontend no conecta al backend
-- Verifica CORS en backend
-- Verifica URL del API en `frontend/js/api.js`
-- Revisa consola del navegador para errores
-
-#### Errores de base de datos
-- Verifica credenciales de conexión
-- Asegúrate de que las migraciones se ejecutaron
-- Revisa logs de PostgreSQL
-
-### Soporte de Deployment
-
-Si encuentras problemas durante el deployment:
-1. Revisa los logs del servicio
-2. Verifica la documentación de la plataforma
-3. Consulta los issues en GitHub
-
-Para una guía más detallada, consulta [DEPLOYMENT.md](./DEPLOYMENT.md)
-
-### IMPORTANTE: Hosting Permanente y Gratis
-
-**Render elimina la base de datos gratuita después de 90 días.** 
-
-Para una solución **100% GRATIS Y PERMANENTE**, consulta:
-- **[GUIA-DEPLOY-GRATIS.md](./GUIA-DEPLOY-GRATIS.md)** - **NUEVA GUÍA COMPLETA** - Opciones 100% gratuitas con Neon, Supabase, Railway, Render y Vercel
-- **[GUIA-NEON-RENDER.md](./GUIA-NEON-RENDER.md)** - Neon (BD) + Render (Backend/Frontend) = **$0/mes permanente**
-- **[GUIA-SUPABASE-RAILWAY.md](./GUIA-SUPABASE-RAILWAY.md)** - Supabase (BD) + Railway (Backend) + Vercel (Frontend)
-- **[GUIA-HOSTING-PERMANENTE.md](./GUIA-HOSTING-PERMANENTE.md)** - Comparación de todas las opciones
-
-**Mejor opción GRATIS**: **Neon (BD permanente) + Render (Backend) + Vercel (Frontend)** = **$0/mes, sin eliminaciones**
+## Documentación de la API
+
+### Autenticación
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Registro de nuevos usuarios (requiere permisos de administrador) |
+| POST | `/api/auth/login` | Autenticación de usuarios (solo administradores) |
+| GET | `/api/auth/profile` | Obtener perfil del usuario autenticado |
+| PUT | `/api/auth/profile` | Actualizar perfil del usuario |
+| GET | `/api/auth/users` | Listar usuarios del sistema |
+
+### Gestión de Eventos
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/api/events` | Listar eventos con filtros opcionales |
+| GET | `/api/events/:id` | Obtener detalles de un evento específico |
+| POST | `/api/events` | Crear nuevo evento |
+| PUT | `/api/events/:id` | Actualizar evento existente |
+| DELETE | `/api/events/:id` | Eliminar evento |
+| GET | `/api/events/stats` | Obtener estadísticas de eventos |
+| GET | `/api/events/upcoming` | Listar próximos eventos |
+| POST | `/api/events/:id/participants` | Agregar participante a evento |
+| GET | `/api/events/:id/participants` | Listar participantes de un evento |
+
+### Gestión de Evidencias
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/api/evidences` | Listar evidencias con filtros opcionales |
+| GET | `/api/evidences/:id` | Obtener detalles de una evidencia específica |
+| POST | `/api/evidences` | Crear nueva evidencia (con archivos) |
+| PUT | `/api/evidences/:id` | Actualizar evidencia existente |
+| DELETE | `/api/evidences/:id` | Eliminar evidencia |
+| GET | `/api/evidences/stats` | Obtener estadísticas de evidencias |
+| GET | `/api/evidences/recent` | Listar evidencias recientes |
+| GET | `/api/evidences/:evidenceId/files/:fileId/download` | Descargar archivo asociado |
+| DELETE | `/api/evidences/:evidenceId/files/:fileId` | Eliminar archivo asociado |
+
+---
+
+## Seguridad
+
+### Mecanismos de Autenticación y Autorización
+
+El sistema implementa un modelo de seguridad multicapa:
+
+**Autenticación**
+- Tokens JWT (JSON Web Tokens) para autenticación stateless
+- Encriptación de contraseñas mediante Bcrypt con salt rounds
+- Restricción de acceso exclusiva a usuarios con rol de administrador
+- Expiración automática de tokens de sesión
+
+**Autorización**
+- Middleware de autenticación en todas las rutas protegidas
+- Validación de permisos basada en roles de usuario
+- Protección contra acceso no autorizado a recursos
+
+**Validación de Datos**
+- Validación y sanitización de entrada en servidor mediante Express Validator
+- Prevención de inyección SQL mediante consultas parametrizadas
+- Validación de tipos de archivo y tamaños máximos
+
+**Configuración de Seguridad**
+- CORS configurado para permitir solicitudes únicamente desde dominios autorizados
+- Headers de seguridad HTTP
+- Protección contra ataques de fuerza bruta
+
+### Recomendaciones para Producción
+
+- Implementar HTTPS mediante certificados SSL/TLS
+- Configurar protección CSRF (Cross-Site Request Forgery)
+- Implementar rate limiting para prevenir abuso de API
+- Configurar logs de auditoría y monitoreo de seguridad
+- Realizar backups regulares de la base de datos
+- Mantener dependencias actualizadas para mitigar vulnerabilidades
 
 ---
 
 ## Funcionalidades Implementadas
 
-### Backend Completo
-- [x] API REST completa con Express.js
-- [x] Autenticación JWT con restricción solo a administradores
-- [x] Base de datos PostgreSQL con relaciones y triggers
-- [x] CRUD completo para Eventos y Evidencias
-- [x] Sistema de carga de archivos (Multer)
-- [x] Validación de datos en todas las rutas
-- [x] Gestión de participantes en eventos
-- [x] Estadísticas y reportes
-- [x] Docker y Docker Compose configurados
+### Backend
 
-### Frontend Integrado
-- [x] Navegación fluida entre páginas
-- [x] Sidebar colapsable con botón de cerrar sesión
-- [x] Sistema de login con validación
-- [x] Todas las vistas conectadas al backend
+- [x] API REST completa con arquitectura Express.js
+- [x] Sistema de autenticación JWT con restricción a administradores
+- [x] Base de datos PostgreSQL con relaciones normalizadas y triggers
+- [x] Operaciones CRUD completas para eventos y evidencias
+- [x] Sistema de carga de archivos con validación y almacenamiento
+- [x] Validación de datos en todas las rutas de API
+- [x] Gestión de participantes en eventos
+- [x] Sistema de estadísticas y reportes
+- [x] Configuración de Docker y Docker Compose
+
+### Frontend
+
+- [x] Interfaz de usuario responsive y moderna
+- [x] Navegación fluida entre módulos
+- [x] Sidebar colapsable con funcionalidad de cierre de sesión
+- [x] Sistema de autenticación con validación en cliente
+- [x] Integración completa con API backend
 - [x] Filtros y búsquedas en tiempo real
-- [x] Modales interactivos para CRUD
-- [x] Carga de archivos con vista previa y almacenamiento real
-- [x] Calendario interactivo conectado a la base de datos
+- [x] Modales interactivos para operaciones CRUD
+- [x] Carga de archivos con vista previa
+- [x] Calendario interactivo conectado a base de datos
 - [x] Gestión de participantes en eventos
-- [x] Sistema de toasts para notificaciones
-- [x] Diseño 100% responsive
-- [x] Soporte para múltiples plataformas de reunión (Jitsi, Google Meet, Zoom, Teams, Webex, GoToMeeting)
+- [x] Sistema de notificaciones mediante toasts
+- [x] Diseño responsive para dispositivos móviles, tablets y desktop
+- [x] Soporte para múltiples plataformas de videoconferencia
 
-### Características Especiales
-- [x] Dashboard con datos reales del backend
-- [x] Tarjetas de eventos con datos dinámicos
-- [x] Calendario que muestra eventos reales de la base de datos
-- [x] Estadísticas precisas de participantes
-- [x] Modales para ver, editar, compartir y descargar evidencias
-- [x] Gestión de archivos (subir, eliminar) en evidencias
+### Características Avanzadas
+
+- [x] Dashboard con métricas en tiempo real desde base de datos
+- [x] Visualización dinámica de eventos en calendario
+- [x] Cálculo preciso de estadísticas de participantes
+- [x] Modales para visualización, edición, compartición y descarga de evidencias
+- [x] Gestión completa de archivos (subida, descarga, eliminación)
 - [x] Supervisión en tiempo real con enlaces de reunión
-- [x] Centro de ayuda con botones funcionales (Email y Llamar Soporte)
+- [x] Centro de ayuda con funcionalidades de contacto
 
 ---
 
 ## Compatibilidad
 
-- Chrome 90+
-- Firefox 88+
-- Safari 14+
-- Edge 90+
-- Dispositivos móviles (iOS/Android)
+### Navegadores Soportados
+
+- Google Chrome 90 o superior
+- Mozilla Firefox 88 o superior
+- Apple Safari 14 o superior
+- Microsoft Edge 90 o superior
+
+### Dispositivos
+
+- Desktop (Windows, macOS, Linux)
+- Tablets (iOS, Android)
+- Smartphones (iOS, Android)
 
 ---
 
-## Personalización
+## Comandos de Desarrollo
 
-### Cambiar Colores
-
-Edita las clases de Tailwind en cualquier archivo HTML:
-
-```html
-<!-- Color primario (purple) -->
-<div class="bg-purple-600">...</div>
-
-<!-- Cambiar a otro color, por ejemplo blue -->
-<div class="bg-blue-600">...</div>
-```
-
-### Modificar Textos
-
-Todos los textos están en español y pueden editarse directamente en los archivos HTML.
-
-### Agregar Nuevas Páginas
-
-Copia la estructura de cualquier página existente y modifica el contenido según necesites.
-
----
-
-## API Endpoints
-
-### Autenticación
-- `POST /api/auth/register` - Registro de usuarios (solo admin puede acceder)
-- `POST /api/auth/login` - Login (solo admin)
-- `GET /api/auth/profile` - Obtener perfil del usuario
-- `PUT /api/auth/profile` - Actualizar perfil
-- `GET /api/auth/users` - Listar usuarios (para gestión de participantes)
-
-### Eventos
-- `GET /api/events` - Listar eventos (con filtros)
-- `GET /api/events/:id` - Obtener evento por ID
-- `POST /api/events` - Crear evento
-- `PUT /api/events/:id` - Actualizar evento
-- `DELETE /api/events/:id` - Eliminar evento
-- `GET /api/events/stats` - Estadísticas de eventos
-- `GET /api/events/upcoming` - Próximos eventos
-- `POST /api/events/:id/participants` - Agregar participante
-- `GET /api/events/:id/participants` - Listar participantes
-
-### Evidencias
-- `GET /api/evidences` - Listar evidencias (con filtros)
-- `GET /api/evidences/:id` - Obtener evidencia por ID
-- `POST /api/evidences` - Crear evidencia (con archivos)
-- `PUT /api/evidences/:id` - Actualizar evidencia (con archivos opcionales)
-- `DELETE /api/evidences/:id` - Eliminar evidencia
-- `GET /api/evidences/stats` - Estadísticas de evidencias
-- `GET /api/evidences/recent` - Evidencias recientes
-- `GET /api/evidences/:evidenceId/files/:fileId/download` - Descargar archivo
-- `DELETE /api/evidences/:evidenceId/files/:fileId` - Eliminar archivo
-
----
-
-## Seguridad y Autenticación
-
-### Sistema de Autenticación
-- **JWT Tokens**: Autenticación basada en tokens JWT
-- **Restricción de Acceso**: Solo usuarios con rol `admin` pueden iniciar sesión
-- **Encriptación**: Contraseñas encriptadas con Bcrypt
-- **Protección de Rutas**: Todas las rutas API protegidas con middleware de autenticación
-- **Validación**: Validación de datos en servidor con Express Validator
-- **CORS**: Configurado para permitir solicitudes desde el frontend
-
-### Botón de Cerrar Sesión
-- Disponible en todas las vistas en el sidebar
-- Limpia el token de autenticación
-- Redirige automáticamente al login
-
-### Notas de Seguridad para Producción
-- Configurar HTTPS
-- Implementar protección CSRF
-- Agregar límites de tasa (rate limiting)
-- Sanitización adicional de entradas
-- Logs de seguridad y auditoría
-
----
-
-## Cambios Recientes (Última Actualización)
-
-### Autenticación y Acceso
-- **Login restringido solo a administradores**: Solo usuarios con rol `admin` pueden acceder al sistema
-- **Botón de cerrar sesión**: Añadido en todas las vistas del sidebar (Dashboard, Registro de Evidencias, Listados, Supervisión en Vivo, Eventos, Ayuda, Configuración)
-- **Validación de roles**: El backend valida el rol antes de permitir el login
-- **Mensaje de error claro**: El login muestra mensaje específico si el usuario no es admin
-
-### Integración Frontend-Backend
-- **Todas las vistas conectadas**: Dashboard, Registro de Evidencias, Listados, Supervisión en Vivo y Eventos completamente integradas
-- **Datos reales**: Todas las tarjetas, calendarios y listas muestran datos de la base de datos PostgreSQL
-- **Gestión de archivos**: Subir, descargar y eliminar archivos de evidencias con almacenamiento real
-- **Calendario dinámico**: Muestra eventos reales con navegación entre meses y resaltado de días con eventos
-- **Estadísticas precisas**: Contadores de participantes y eventos calculados directamente desde la base de datos
-- **Modales CRUD completos**: Ver, editar, compartir y descargar evidencias con datos del backend
-- **Gestión de participantes**: Agregar participantes a eventos con búsqueda de usuarios
-
-### Mejoras de UI/UX
-- **Diseño responsive mejorado**: Optimizado para móvil, tablet y desktop en todas las vistas
-- **Sistema de toasts**: Notificaciones estilo Bootstrap en todas las vistas con z-index optimizado
-- **Modales interactivos**: Modales para ver, editar, compartir y descargar evidencias
-- **Centro de ayuda funcional**: Botones de Email (`mailto:`) y Llamar Soporte (`tel:`) operativos
-- **Eliminación de elementos obsoletos**: Removidos barra de búsqueda y dropdown de perfil de todas las vistas
-- **Mejoras visuales**: Tarjetas con gradientes, hover effects y sombras mejoradas
-
-### Soporte de Reuniones
-- **Múltiples plataformas**: Soporte para Jitsi, Google Meet, Zoom, Teams, Webex, GoToMeeting
-- **Detección automática**: El sistema detecta y muestra la plataforma automáticamente
-- **Integración con eventos**: Los eventos pueden tener enlaces de reunión asociados
-- **Renderizado condicional**: Iframes para plataformas compatibles, botones para otras
-- **Supervisión en tiempo real**: Vista mejorada con indicadores de transmisiones activas
-
-### Backend y Base de Datos
-- **API REST completa**: 20+ endpoints documentados y funcionales
-- **Validación robusta**: Express Validator en todas las rutas
-- **Gestión de archivos**: Multer configurado para uploads múltiples
-- **Cálculo de participantes**: Consultas optimizadas que cuentan directamente desde `event_participants`
-- **Limpieza de datos**: Scripts para eliminar datos de prueba
-- **Migraciones**: Sistema de migraciones para esquema de base de datos
-
-### Documentación
-- **README completo**: Documentación actualizada con todas las funcionalidades
-- **Guía de deployment**: Instrucciones detalladas para Railway, Render y DigitalOcean
-- **Checklist de producción**: Lista de verificación antes de deploy
-- **Troubleshooting**: Guía de solución de problemas comunes
-
-## Roadmap (Próximas Versiones)
-
-### Versión 2.1 - Mejoras Adicionales
-- [ ] Notificaciones push en tiempo real
-- [ ] Exportación mejorada de reportes (PDF, Excel)
-- [ ] Búsqueda avanzada con filtros múltiples
-- [ ] Dashboard personalizable
-
-### Versión 3.0 - Advanced Features
-- [ ] Streaming de video real (WebRTC/HLS)
-- [ ] App móvil nativa
-- [ ] Modo offline con sincronización
-- [ ] Reportes avanzados con gráficos interactivos
-- [ ] Integración con servicios de almacenamiento en la nube (AWS S3/Azure Blob)
-
----
-
-## Contribución
-
-Si deseas contribuir al proyecto:
-
-1. Haz fork del repositorio
-2. Crea una rama para tu feature (`git checkout -b feature/nueva-funcionalidad`)
-3. Commit tus cambios (`git commit -am 'Agrega nueva funcionalidad'`)
-4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
-5. Abre un Pull Request
-
----
-
-## Licencia
-
-Este proyecto está bajo la Licencia MIT - ver el archivo LICENSE para más detalles.
-
----
-
-## Contacto y Soporte
-
-Para preguntas, sugerencias o reportar problemas:
-
-- **Email**: [tu-email@ejemplo.com]
-- **GitHub Issues**: [Crear un issue](../../issues)
-
----
-
-## Agradecimientos
-
-- Diseñado para el RESGUARDO INDÍGENA CATRÚ, DUBASA Y ANCOSÓ
-- Resolución N° 215 de 2025
-- Sistema desarrollado con tecnologías web modernas y open source
-
----
-
-## Comandos Útiles
+### Docker
 
 ```bash
-# Ver estado de servicios Docker
+# Ver estado de servicios
 docker-compose ps
 
 # Ver logs del backend
 docker-compose logs -f backend
 
-# Reiniciar backend
+# Reiniciar servicio backend
 docker-compose restart backend
 
 # Detener todos los servicios
 docker-compose down
 
-# Eliminar todo (incluyendo base de datos)
+# Detener y eliminar volúmenes (incluyendo base de datos)
 docker-compose down -v
 
-# Acceder a la base de datos
+# Acceder a la base de datos PostgreSQL
 docker-compose exec postgres psql -U postgres -d supervision_db
+```
+
+### Base de Datos
+
+```bash
+# Ejecutar migraciones
+npm run migrate
+
+# Cargar datos iniciales
+npm run seed
+
+# Revertir última migración
+npm run migrate:rollback
 ```
 
 ---
 
-**Versión**: 2.0.0
-**Última actualización**: Noviembre 2025
-**Estado**: Sistema Completo - Backend + Frontend Integrados - Listo para Producción
+## Roadmap de Desarrollo
+
+### Versión 2.1 - Mejoras Incrementales
+- Notificaciones push en tiempo real
+- Exportación avanzada de reportes (PDF, Excel con formato personalizado)
+- Búsqueda avanzada con filtros múltiples y combinados
+- Personalización de dashboard por usuario
+
+### Versión 3.0 - Funcionalidades Avanzadas
+- Streaming de video en tiempo real (WebRTC/HLS)
+- Aplicación móvil nativa (iOS/Android)
+- Modo offline con sincronización automática
+- Reportes avanzados con gráficos interactivos y análisis predictivo
+- Integración con servicios de almacenamiento en la nube (AWS S3, Azure Blob Storage)
+
+---
+
+## Contribución
+
+Este proyecto sigue estándares de desarrollo profesional. Para contribuir:
+
+1. Realizar fork del repositorio
+2. Crear una rama de feature (`git checkout -b feature/nombre-funcionalidad`)
+3. Realizar commits descriptivos siguiendo convenciones de mensajes
+4. Enviar pull request con descripción detallada de los cambios
+
+### Estándares de Código
+
+- Seguir convenciones de nomenclatura establecidas
+- Incluir comentarios en código complejo
+- Mantener cobertura de tests adecuada
+- Actualizar documentación según corresponda
+
+---
+
+## Licencia
+
+Este proyecto está licenciado bajo la Licencia MIT. Consultar el archivo `LICENSE` para más detalles.
+
+---
+
+## Información del Proyecto
+
+**Versión**: 2.0.0  
+**Última Actualización**: Noviembre 2025  
+**Estado**: Sistema Completo - Backend y Frontend Integrados - Listo para Producción
+
+---
+
+## Contacto y Soporte
+
+Para consultas técnicas, reporte de problemas o solicitudes de funcionalidades:
+
+- **Email**: [contacto@ejemplo.com]
+- **Issues**: [GitHub Issues](https://github.com/usuario/repositorio/issues)
+
+---
+
+## Agradecimientos
+
+Sistema desarrollado para el **Resguardo Indígena Catrú, Dubasa y Ancósó** bajo la **Resolución N° 215 de 2025**.
+
+Desarrollado con tecnologías web modernas y estándares de código abierto.

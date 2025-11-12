@@ -58,51 +58,6 @@ app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/evidences', evidenceRoutes);
 
-// TEMPORAL: Endpoint para arreglar passwords (ELIMINAR DESPUÉS DE USAR)
-app.post('/api/fix-passwords', async (req, res) => {
-  try {
-    const bcrypt = require('bcrypt');
-    const pool = require('./config/database');
-    
-    console.log('🔐 Fixing user passwords...');
-    
-    const correctPassword = 'password123';
-    const hashedPassword = await bcrypt.hash(correctPassword, 10);
-    
-    const usersResult = await pool.query('SELECT id, email, role FROM users');
-    const users = usersResult.rows;
-    
-    for (const user of users) {
-      await pool.query(
-        'UPDATE users SET password = $1 WHERE id = $2',
-        [hashedPassword, user.id]
-      );
-    }
-    
-    // Verify
-    const testUser = await pool.query('SELECT password FROM users WHERE email = $1', ['admin@supervision.com']);
-    const isValid = await bcrypt.compare(correctPassword, testUser.rows[0].password);
-    
-    res.json({
-      success: true,
-      message: 'Passwords fixed successfully!',
-      usersUpdated: users.length,
-      verified: isValid,
-      credentials: {
-        email: 'admin@supervision.com',
-        password: 'password123'
-      }
-    });
-  } catch (error) {
-    console.error('Error fixing passwords:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fixing passwords',
-      error: error.message
-    });
-  }
-});
-
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({

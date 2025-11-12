@@ -125,6 +125,8 @@ Esta guía te ayudará a desplegar tu proyecto **100% GRATIS** usando servicios 
    ```
    O usa cualquier generador de strings aleatorios (mínimo 32 caracteres).
 
+   **✅ Nota importante:** El código ya está configurado para usar SSL automáticamente con Neon. No necesitas configurar nada adicional.
+
 4. **Ejecutar migraciones**
    - Ve a "Shell" en Render
    - Ejecuta:
