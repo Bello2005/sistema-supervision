@@ -10,6 +10,10 @@ const pool = new Pool({
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,
+  // SSL configuration for Neon and other cloud databases
+  ssl: process.env.DB_HOST && !process.env.DB_HOST.includes('localhost') 
+    ? { rejectUnauthorized: false } 
+    : false,
 });
 
 pool.on('connect', () => {
