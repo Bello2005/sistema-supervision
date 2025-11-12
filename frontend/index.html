@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Supervisión en Tiempo Real - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="js/api.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .pulse-dot {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .5;
+            }
+        }
+
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50" x-data="{
+    sidebarOpen: false,
+    currentPage: 'dashboard',
+    showProfileMenu: false,
+    activeEvents: 0,
+    activeStreams: 0,
+    totalUsers: 0,
+    evidenceCount: 0,
+    recentEvents: [],
+    recentActivity: [],
+    activityChart: [],
+    userProfile: null,
+    loading: true,
+    
+    async init() {
+        // Verificar autenticación
+        if (!api.getToken()) {
+            window.location.href = '/login.html';
+            return;
+        }
+        
+        await this.loadDashboardData();
+    },
+    
+    async loadDashboardData() {
+        try {
+            this.loading = true;
+            
+            // Cargar perfil del usuario
+            const profileRes = await api.getProfile();
+            if (profileRes.success) {
+                this.userProfile = profileRes.data;
+            }
+            
+            // Cargar estadísticas de eventos
+            const eventsStatsRes = await api.getEventsStats();
+            if (eventsStatsRes.success) {
+                const stats = eventsStatsRes.data;
+                this.activeEvents = stats.en_curso || stats.active || 0;
+            }
+            
+            // Cargar eventos en curso para contar transmisiones activas
+            const eventsRes = await api.getEvents();
+            if (eventsRes.success) {
+                const eventsInProgress = (eventsRes.data || []).filter(e => e.status === 'en_curso');
+                // Contar solo los que tienen meeting_url (transmisión activa)
+                this.activeStreams = eventsInProgress.filter(e => e.meeting_url).length;
+            }
+            
+            // Cargar estadísticas de evidencias
+            const evidencesStatsRes = await api.getEvidencesStats();
+            if (evidencesStatsRes.success) {
+                const stats = evidencesStatsRes.data;
+                this.evidenceCount = stats.total_evidences || stats.total || 0;
+            }
+            
+            // Cargar eventos recientes (todos los eventos, ordenados por fecha)
+            const recentEventsRes = await api.getEvents({ limit: 10 });
+            if (recentEventsRes.success) {
+                // Filtrar y ordenar eventos recientes (últimos 5)
+                const allEvents = recentEventsRes.data || [];
+                this.recentEvents = allEvents
+                    .filter(e => {
+                        // Solo eventos con fecha válida
+                        if (!e.start_date) return false;
+                        const testDate = new Date(e.start_date);
+                        return !isNaN(testDate.getTime());
+                    })
+                    .sort((a, b) => {
+                        // Ordenar por fecha de inicio (más recientes primero)
+                        const dateA = new Date(a.start_date + (a.start_time ? 'T' + a.start_time : 'T00:00:00'));
+                        const dateB = new Date(b.start_date + (b.start_time ? 'T' + b.start_time : 'T00:00:00'));
+                        return dateB.getTime() - dateA.getTime();
+                    })
+                    .slice(0, 5); // Solo los 5 más recientes
+            } else {
+                this.recentEvents = [];
+            }
+            
+            // Cargar evidencias recientes para actividad
+            const recentEvidencesRes = await api.getRecentEvidences(10);
+            const allActivities = [];
+            
+            if (recentEvidencesRes.success) {
+                const evidences = recentEvidencesRes.data || [];
+                
+                // Crear actividad desde evidencias
+                evidences.forEach((ev, index) => {
+                    // Usar created_at si existe, sino usar captured_at, sino distribuir en el tiempo
+                    let timestamp;
+                    if (ev.created_at) {
+                        timestamp = new Date(ev.created_at).getTime();
+                    } else if (ev.captured_at) {
+                        timestamp = new Date(ev.captured_at).getTime();
+                    } else {
+                        // Si no hay fecha, distribuir en las últimas horas para el gráfico
+                        const now = new Date();
+                        const hoursAgo = 3 - (index % 4); // Distribuir en las últimas 4 horas
+                        timestamp = now.getTime() - (hoursAgo * 60 * 60 * 1000);
+                    }
+                    
+                    if (!isNaN(timestamp)) {
+                        allActivities.push({
+                            type: 'evidence',
+                            title: 'Nueva evidencia registrada',
+                            description: `Evento #${ev.event_id || 'N/A'} - ${ev.title}`,
+                            time: this.formatTime(new Date(timestamp)),
+                            timestamp: timestamp,
+                            evidenceType: ev.evidence_type
+                        });
+                    }
+                });
+            }
+            
+            // Agregar eventos recientes a la actividad (usar fecha de inicio del evento)
+            if (this.recentEvents && this.recentEvents.length > 0) {
+                this.recentEvents.forEach((event, index) => {
+                    if (event.start_date) {
+                        let timestamp;
+                        if (event.start_time) {
+                            timestamp = new Date(event.start_date + 'T' + event.start_time).getTime();
+                        } else {
+                            timestamp = new Date(event.start_date).getTime();
+                        }
+                        
+                        if (!isNaN(timestamp)) {
+                            allActivities.push({
+                                type: 'event',
+                                title: 'Nuevo evento',
+                                description: event.title,
+                                time: this.formatTime(new Date(timestamp)),
+                                timestamp: timestamp,
+                                eventType: event.type
+                            });
+                        }
+                    }
+                });
+            }
+            
+            // Ordenar todas las actividades por timestamp
+            allActivities.sort((a, b) => b.timestamp - a.timestamp);
+            
+            // Agrupar actividad por horas para el gráfico
+            const now = new Date();
+            const activityByHour = {};
+            const colors = ['purple', 'blue', 'green', 'orange'];
+            
+            // Inicializar horas de las últimas 4 horas
+            for (let i = 0; i < 4; i++) {
+                const hour = new Date(now);
+                hour.setHours(now.getHours() - (3 - i));
+                hour.setMinutes(0);
+                hour.setSeconds(0);
+                const hourKey = hour.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                activityByHour[hourKey] = {
+                    time: hourKey,
+                    count: 0,
+                    color: colors[i % colors.length]
+                };
+            }
+            
+            // Contar actividad por hora
+            allActivities.forEach(act => {
+                const actDate = new Date(act.timestamp);
+                const actHour = new Date(actDate);
+                actHour.setMinutes(0);
+                actHour.setSeconds(0);
+                const hourKey = actHour.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                
+                // Si la hora está en el rango de las últimas 4 horas, contarla
+                const hoursDiff = (now.getTime() - actDate.getTime()) / (1000 * 60 * 60);
+                if (hoursDiff >= 0 && hoursDiff < 4) {
+                    if (activityByHour[hourKey]) {
+                        activityByHour[hourKey].count++;
+                    } else {
+                        // Si no está exactamente en la hora, asignarla a la hora más cercana
+                        const closestHour = Object.keys(activityByHour).reduce((closest, key) => {
+                            const keyTime = key.split(':').map(Number);
+                            const actTime = actDate.getHours() * 60 + actDate.getMinutes();
+                            const keyMinutes = keyTime[0] * 60 + keyTime[1];
+                            const closestMinutes = closest.split(':').map(Number);
+                            const closestTime = closestMinutes[0] * 60 + closestMinutes[1];
+                            
+                            return Math.abs(actTime - keyMinutes) < Math.abs(actTime - closestTime) ? key : closest;
+                        });
+                        if (activityByHour[closestHour]) {
+                            activityByHour[closestHour].count++;
+                        }
+                    }
+                }
+            });
+            
+            // Convertir a array y ordenar
+            this.activityChart = Object.values(activityByHour).sort((a, b) => {
+                const timeA = a.time.split(':').map(Number);
+                const timeB = b.time.split(':').map(Number);
+                return timeA[0] * 60 + timeA[1] - (timeB[0] * 60 + timeB[1]);
+            });
+            
+            // Actividad reciente para la lista (últimas 4)
+            this.recentActivity = allActivities.slice(0, 4);
+            
+            // Estimar usuarios (no hay endpoint específico, calcular desde eventos)
+            // Podríamos obtener esto de un endpoint de estadísticas de usuarios si existiera
+            this.totalUsers = 0; // Se puede calcular desde participantes de eventos si es necesario
+            
+        } catch (error) {
+            console.error('Error loading dashboard:', error);
+            if (error.message.includes('401') || error.message.includes('Authentication')) {
+                window.location.href = '/login.html';
+            }
+        } finally {
+            this.loading = false;
+        }
+    },
+    
+    formatTime(dateString) {
+        if (!dateString) return 'Hace un momento';
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return 'Hace un momento';
+            
+            const now = new Date();
+            const diff = now.getTime() - date.getTime();
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+            
+            if (minutes < 1) return 'Hace un momento';
+            if (minutes < 60) return `Hace ${minutes} min`;
+            if (hours < 24) return `Hace ${hours} hora${hours > 1 ? 's' : ''}`;
+            if (days < 7) return `Hace ${days} día${days > 1 ? 's' : ''}`;
+            
+            // Si es más de una semana, mostrar fecha
+            return date.toLocaleDateString('es-ES', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric'
+            });
+        } catch (error) {
+            return 'Hace un momento';
+        }
+    },
+    
+    formatDate(dateString, timeString = null) {
+        if (!dateString) return 'Sin fecha';
+        try {
+            let date;
+            
+            // Limpiar y normalizar la fecha
+            const cleanDate = dateString.trim();
+            
+            if (timeString && timeString.trim() !== '') {
+                // Limpiar y normalizar la hora
+                const cleanTime = timeString.trim();
+                // Asegurar formato HH:MM:SS o HH:MM
+                const timeParts = cleanTime.split(':');
+                const normalizedTime = timeParts.length === 2 
+                    ? `${timeParts[0].padStart(2, '0')}:${timeParts[1].padStart(2, '0')}:00`
+                    : cleanTime;
+                
+                // Combinar fecha y hora en formato ISO
+                const dateTimeStr = `${cleanDate}T${normalizedTime}`;
+                date = new Date(dateTimeStr);
+            } else {
+                // Solo fecha
+                date = new Date(cleanDate);
+            }
+            
+            if (isNaN(date.getTime())) {
+                // Si falla, intentar parsear solo la fecha
+                const dateOnly = new Date(cleanDate);
+                if (!isNaN(dateOnly.getTime())) {
+                    return dateOnly.toLocaleDateString('es-ES', { 
+                        day: '2-digit', 
+                        month: '2-digit', 
+                        year: 'numeric'
+                    });
+                }
+                return 'Sin fecha';
+            }
+            
+            // Formatear según si hay hora o no
+            if (timeString && timeString.trim() !== '') {
+                return date.toLocaleDateString('es-ES', { 
+                    day: '2-digit', 
+                    month: '2-digit', 
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } else {
+                return date.toLocaleDateString('es-ES', { 
+                    day: '2-digit', 
+                    month: '2-digit', 
+                    year: 'numeric'
+                });
+            }
+        } catch (error) {
+            console.error('Error formatting date:', error, dateString, timeString);
+            return 'Sin fecha';
+        }
+    },
+    
+    getStatusClass(status) {
+        const statusMap = {
+            'en_curso': 'bg-green-100 text-green-700',
+            'programado': 'bg-yellow-100 text-yellow-700',
+            'completado': 'bg-gray-100 text-gray-700',
+            'cancelado': 'bg-red-100 text-red-700'
+        };
+        return statusMap[status] || 'bg-gray-100 text-gray-700';
+    },
+    
+    getStatusText(status) {
+        const statusMap = {
+            'en_curso': 'En curso',
+            'programado': 'Programado',
+            'completado': 'Completado',
+            'cancelado': 'Cancelado'
+        };
+        return statusMap[status] || status;
+    }
+}">
+
+    <!-- Mobile Overlay -->
+    <div x-show="sidebarOpen" 
+         @click="sidebarOpen = false"
+         x-transition:enter="transition-opacity ease-linear duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition-opacity ease-linear duration-300"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"></div>
+
+    <!-- Sidebar -->
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'" 
+            class="fixed left-0 top-0 h-full bg-white shadow-xl transition-all duration-300 z-50 w-64 lg:w-64">
+        <div class="flex flex-col h-full">
+            <!-- Logo -->
+            <div class="p-4 lg:p-6 gradient-bg">
+                <div class="flex items-center justify-between">
+                    <div class="text-white">
+                        <h1 class="text-lg lg:text-xl font-bold">SuperVision</h1>
+                        <p class="text-xs text-purple-200">Sistema de Monitoreo</p>
+                    </div>
+                    <button @click="sidebarOpen = !sidebarOpen" class="text-white hover:bg-white/20 p-2 rounded-lg lg:hidden">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <button @click="sidebarOpen = !sidebarOpen" class="text-white hover:bg-white/20 p-2 rounded-lg hidden lg:block">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 p-2 lg:p-4 space-y-1 lg:space-y-2 overflow-y-auto">
+                <a href="index.html" class="flex items-center space-x-3 p-2 lg:p-3 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+                    <i class="fas fa-chart-line w-5 lg:w-6"></i>
+                    <span class="font-medium text-sm lg:text-base">Dashboard</span>
+                </a>
+
+                <a href="registro-evidencias.html" class="flex items-center space-x-3 p-2 lg:p-3 rounded-xl hover:bg-gray-100 text-gray-700 transition-colors">
+                    <i class="fas fa-camera w-5 lg:w-6"></i>
+                    <span class="font-medium text-sm lg:text-base">Registro de Evidencias</span>
+                    <span class="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-1">3</span>
+                </a>
+
+                <a href="listados.html" class="flex items-center space-x-3 p-2 lg:p-3 rounded-xl hover:bg-gray-100 text-gray-700 transition-colors">
+                    <i class="fas fa-list-alt w-5 lg:w-6"></i>
+                    <span class="font-medium text-sm lg:text-base">Listados y Registros</span>
+                </a>
+
+                <a href="supervision-tiempo-real.html" class="flex items-center space-x-3 p-2 lg:p-3 rounded-xl hover:bg-gray-100 text-gray-700 transition-colors">
+                    <i class="fas fa-eye w-5 lg:w-6"></i>
+                    <span class="font-medium text-sm lg:text-base">Supervisión en Vivo</span>
+                    <span x-show="activeStreams > 0" 
+                          class="pulse-dot ml-auto w-2 h-2 bg-red-500 rounded-full" 
+                          :title="`${activeStreams} transmisión${activeStreams > 1 ? 'es' : ''} activa${activeStreams > 1 ? 's' : ''}`"></span>
+                </a>
+
+                <a href="eventos-capacitacion.html" class="flex items-center space-x-3 p-2 lg:p-3 rounded-xl hover:bg-gray-100 text-gray-700 transition-colors">
+                    <i class="fas fa-calendar-check w-5 lg:w-6"></i>
+                    <span class="font-medium text-sm lg:text-base">Eventos y Capacitación</span>
+                </a>
+
+                <hr class="my-2 lg:my-4">
+
+                <a href="configuracion.html" class="flex items-center space-x-3 p-2 lg:p-3 rounded-xl hover:bg-gray-100 text-gray-700 transition-colors">
+                    <i class="fas fa-cog w-5 lg:w-6"></i>
+                    <span class="font-medium text-sm lg:text-base">Configuración</span>
+                </a>
+
+                <a href="ayuda.html" class="flex items-center space-x-3 p-2 lg:p-3 rounded-xl hover:bg-gray-100 text-gray-700 transition-colors">
+                    <i class="fas fa-question-circle w-5 lg:w-6"></i>
+                    <span class="font-medium text-sm lg:text-base">Ayuda</span>
+                </a>
+            </nav>
+
+            <!-- User Profile -->
+            <div class="p-3 lg:p-4 border-t">
+                <div class="flex items-center space-x-2 lg:space-x-3 mb-3">
+                    <img :src="userProfile ? `https://ui-avatars.com/api/?name=${encodeURIComponent(userProfile.full_name || 'User')}&background=667eea&color=fff` : 'https://ui-avatars.com/api/?name=User&background=667eea&color=fff'"
+                         class="w-8 h-8 lg:w-10 lg:h-10 rounded-full flex-shrink-0" alt="User">
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs lg:text-sm font-semibold text-gray-700 truncate" x-text="userProfile ? userProfile.full_name : 'Usuario'"></p>
+                        <p class="text-[10px] lg:text-xs text-gray-500 truncate" x-text="userProfile ? (userProfile.role || 'Usuario').charAt(0).toUpperCase() + (userProfile.role || 'Usuario').slice(1) : 'Usuario'"></p>
+                    </div>
+                </div>
+                <button @click="api.logout()" class="w-full flex items-center justify-center space-x-2 px-3 lg:px-4 py-2 lg:py-2.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-medium transition-colors text-sm lg:text-base">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Cerrar Sesión</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="lg:ml-64 transition-all duration-300">
+
+        <!-- Top Bar -->
+        <header class="bg-white shadow-sm sticky top-0 z-40">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between p-4 lg:p-6 gap-4">
+                <div class="flex items-center justify-between w-full lg:w-auto">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-3">
+                            <button @click="sidebarOpen = true" class="lg:hidden text-gray-600 hover:bg-gray-100 p-2 rounded-lg">
+                                <i class="fas fa-bars text-xl"></i>
+                            </button>
+                            <div class="min-w-0 flex-1">
+                                <h2 class="text-lg lg:text-2xl font-bold text-gray-800 truncate">RES N 215 DE 2025 RESGUARDO INDIGENA CATRÚ, DUBASA Y ANCOSÓ</h2>
+                                <p class="text-gray-500 text-xs lg:text-sm hidden sm:block">Bienvenido al sistema de supervisión en tiempo real</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <main class="p-4 lg:p-6">
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
+
+                <!-- Card 1 -->
+                <div class="bg-white rounded-2xl shadow-lg p-6 card-hover slide-in">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
+                            <i class="fas fa-users text-white text-2xl"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Usuarios Activos</h3>
+                    <p class="text-3xl font-bold text-gray-800" x-text="totalUsers || 0"></p>
+                    <div class="mt-4 flex items-center text-xs text-gray-500">
+                        <i class="fas fa-clock mr-1"></i>
+                        <span x-text="loading ? 'Cargando...' : 'Actualizado'"></span>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bg-white rounded-2xl shadow-lg p-6 card-hover slide-in" style="animation-delay: 0.1s">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl">
+                            <i class="fas fa-photo-video text-white text-2xl"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Evidencias Registradas</h3>
+                    <p class="text-3xl font-bold text-gray-800" x-text="evidenceCount || 0"></p>
+                    <div class="mt-4 flex items-center text-xs text-gray-500">
+                        <i class="fas fa-clock mr-1"></i>
+                        <span x-text="loading ? 'Cargando...' : 'Actualizado'"></span>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-white rounded-2xl shadow-lg p-6 card-hover slide-in" style="animation-delay: 0.2s">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl">
+                            <i class="fas fa-calendar-alt text-white text-2xl"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Eventos Activos</h3>
+                    <p class="text-3xl font-bold text-gray-800" x-text="activeEvents || 0"></p>
+                    <div class="mt-4 flex items-center text-xs text-gray-500">
+                        <i class="fas fa-clock mr-1"></i>
+                        En tiempo real
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="bg-white rounded-2xl shadow-lg p-6 card-hover slide-in" style="animation-delay: 0.3s">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl">
+                            <i class="fas fa-broadcast-tower text-white text-2xl"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Transmisiones en Vivo</h3>
+                    <p class="text-3xl font-bold text-gray-800" x-text="activeStreams || 0"></p>
+                    <div class="mt-4 flex items-center text-xs" :class="activeStreams > 0 ? 'text-green-600' : 'text-gray-500'">
+                        <span x-show="activeStreams > 0" class="pulse-dot w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                        <span x-text="activeStreams > 0 ? 'Transmisiones activas' : 'Sin transmisiones'"></span>
+                    </div>
+                    <div x-show="activeStreams > 0" class="mt-2">
+                        <a href="supervision-tiempo-real.html" class="text-xs text-purple-600 hover:text-purple-700 font-medium">
+                            Ver transmisiones <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Charts and Activity -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8">
+
+                <!-- Activity Chart -->
+                <div class="lg:col-span-2 bg-white rounded-2xl shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800">Actividad en Tiempo Real</h3>
+                            <p class="text-sm text-gray-500">Eventos registrados en las últimas 24 horas</p>
+                        </div>
+                        <select class="px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option>Últimas 24 horas</option>
+                            <option>Última semana</option>
+                            <option>Último mes</option>
+                        </select>
+                    </div>
+
+                    <!-- Activity Chart -->
+                    <div x-show="loading" class="text-center py-12">
+                        <i class="fas fa-spinner fa-spin text-purple-600 text-3xl mb-4"></i>
+                        <p class="text-sm text-gray-500">Cargando actividad...</p>
+                    </div>
+                    <div x-show="!loading && activityChart.length === 0" class="text-center py-12">
+                        <i class="fas fa-chart-line text-gray-300 text-4xl mb-4"></i>
+                        <p class="text-gray-600 font-semibold mb-2">No hay actividad registrada</p>
+                        <p class="text-sm text-gray-500">La actividad aparecerá aquí cuando se registren eventos o evidencias</p>
+                    </div>
+                    <div x-show="!loading && activityChart.length > 0" class="space-y-4">
+                        <template x-for="(item, index) in activityChart" :key="index">
+                            <div class="flex items-center space-x-4">
+                                <span class="text-sm text-gray-600 w-20" x-text="item.time"></span>
+                                <div class="flex-1 bg-gray-200 rounded-full h-8 overflow-hidden">
+                                    <div class="h-full rounded-full transition-all duration-500"
+                                         :class="{
+                                             'bg-gradient-to-r from-purple-500 to-purple-600': item.color === 'purple',
+                                             'bg-gradient-to-r from-blue-500 to-blue-600': item.color === 'blue',
+                                             'bg-gradient-to-r from-green-500 to-green-600': item.color === 'green',
+                                             'bg-gradient-to-r from-orange-500 to-orange-600': item.color === 'orange'
+                                         }"
+                                         :style="`width: ${activityChart.length > 0 && Math.max(...activityChart.map(a => a.count || 0)) > 0 ? Math.min((item.count / Math.max(...activityChart.map(a => a.count || 0))) * 100, 100) : 0}%`"></div>
+                                </div>
+                                <span class="text-sm font-semibold text-gray-700" x-text="item.count || 0"></span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6">Actividad Reciente</h3>
+                    <div x-show="loading" class="text-center py-8">
+                        <i class="fas fa-spinner fa-spin text-purple-600 text-2xl"></i>
+                        <p class="text-sm text-gray-500 mt-2">Cargando...</p>
+                    </div>
+                    <div x-show="!loading" class="space-y-4">
+                        <template x-for="(activity, index) in recentActivity.slice(0, 4)" :key="index">
+                            <div class="flex items-start space-x-3 pb-4 border-b border-gray-100">
+                                <div class="p-2 rounded-lg"
+                                     :class="{
+                                         'bg-blue-100': activity.type === 'evidence' && (!activity.evidenceType || activity.evidenceType === 'foto'),
+                                         'bg-purple-100': activity.type === 'evidence' && activity.evidenceType === 'video',
+                                         'bg-green-100': activity.type === 'evidence' && activity.evidenceType === 'documento',
+                                         'bg-orange-100': activity.type === 'evidence' && activity.evidenceType === 'audio',
+                                         'bg-yellow-100': activity.type === 'event'
+                                     }">
+                                    <i class="text-sm"
+                                       :class="{
+                                           'fas fa-camera text-blue-600': activity.type === 'evidence' && (!activity.evidenceType || activity.evidenceType === 'foto'),
+                                           'fas fa-video text-purple-600': activity.type === 'evidence' && activity.evidenceType === 'video',
+                                           'fas fa-file-alt text-green-600': activity.type === 'evidence' && activity.evidenceType === 'documento',
+                                           'fas fa-microphone text-orange-600': activity.type === 'evidence' && activity.evidenceType === 'audio',
+                                           'fas fa-calendar-alt text-yellow-600': activity.type === 'event'
+                                       }"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-semibold text-gray-800" x-text="activity.title"></p>
+                                    <p class="text-xs text-gray-500" x-text="activity.description + ' - ' + activity.time"></p>
+                                </div>
+                            </div>
+                        </template>
+                        <div x-show="recentActivity.length === 0" class="text-center py-8">
+                            <i class="fas fa-inbox text-gray-300 text-3xl mb-2"></i>
+                            <p class="text-sm text-gray-500">No hay actividad reciente</p>
+                        </div>
+                    </div>
+
+                    <button class="w-full mt-4 py-2 text-purple-600 hover:bg-purple-50 rounded-xl transition-colors font-medium text-sm">
+                        Ver todas las actividades
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="bg-white rounded-2xl shadow-lg p-4 lg:p-6 mb-6 lg:mb-8">
+                <h3 class="text-lg lg:text-xl font-bold text-gray-800 mb-4 lg:mb-6">Acciones Rápidas</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <a href="registro-evidencias.html" class="group p-6 border-2 border-gray-200 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-all text-center">
+                        <div class="w-16 h-16 mx-auto bg-purple-100 group-hover:bg-purple-200 rounded-full flex items-center justify-center mb-4 transition-colors">
+                            <i class="fas fa-plus text-purple-600 text-2xl"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-1">Nueva Evidencia</h4>
+                        <p class="text-xs text-gray-500">Registrar foto o video</p>
+                    </a>
+
+                    <a href="eventos-capacitacion.html" class="group p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all text-center">
+                        <div class="w-16 h-16 mx-auto bg-blue-100 group-hover:bg-blue-200 rounded-full flex items-center justify-center mb-4 transition-colors">
+                            <i class="fas fa-calendar-plus text-blue-600 text-2xl"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-1">Nuevo Evento</h4>
+                        <p class="text-xs text-gray-500">Crear capacitación</p>
+                    </a>
+
+                    <a href="listados.html" class="group p-6 border-2 border-gray-200 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all text-center">
+                        <div class="w-16 h-16 mx-auto bg-green-100 group-hover:bg-green-200 rounded-full flex items-center justify-center mb-4 transition-colors">
+                            <i class="fas fa-file-export text-green-600 text-2xl"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-1">Exportar Datos</h4>
+                        <p class="text-xs text-gray-500">Generar reportes</p>
+                    </a>
+
+                    <a href="supervision-tiempo-real.html" class="group p-6 border-2 border-gray-200 rounded-xl hover:border-orange-500 hover:bg-orange-50 transition-all text-center">
+                        <div class="w-16 h-16 mx-auto bg-orange-100 group-hover:bg-orange-200 rounded-full flex items-center justify-center mb-4 transition-colors">
+                            <i class="fas fa-eye text-orange-600 text-2xl"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-1">Ver en Vivo</h4>
+                        <p class="text-xs text-gray-500">Supervisión activa</p>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Recent Events Table -->
+            <div class="bg-white rounded-2xl shadow-lg p-4 lg:p-6">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 lg:mb-6">
+                    <h3 class="text-lg lg:text-xl font-bold text-gray-800">Eventos Recientes</h3>
+                    <a href="eventos-capacitacion.html" class="text-purple-600 hover:text-purple-700 font-medium text-sm flex items-center">
+                        Ver todos <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+
+                <div x-show="loading" class="text-center py-12">
+                    <i class="fas fa-spinner fa-spin text-purple-600 text-3xl"></i>
+                    <p class="text-sm text-gray-500 mt-4">Cargando eventos...</p>
+                </div>
+                <div x-show="!loading" class="overflow-x-auto -mx-4 lg:mx-0">
+                    <table class="w-full min-w-[800px]" x-show="recentEvents.length > 0">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left py-3 px-3 lg:px-4 text-xs lg:text-sm font-semibold text-gray-600">ID</th>
+                                <th class="text-left py-3 px-3 lg:px-4 text-xs lg:text-sm font-semibold text-gray-600">Evento</th>
+                                <th class="text-left py-3 px-3 lg:px-4 text-xs lg:text-sm font-semibold text-gray-600">Tipo</th>
+                                <th class="text-left py-3 px-3 lg:px-4 text-xs lg:text-sm font-semibold text-gray-600">Fecha</th>
+                                <th class="text-left py-3 px-3 lg:px-4 text-xs lg:text-sm font-semibold text-gray-600">Estado</th>
+                                <th class="text-left py-3 px-3 lg:px-4 text-xs lg:text-sm font-semibold text-gray-600">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="event in recentEvents" :key="event.id">
+                                <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                                    <td class="py-3 lg:py-4 px-3 lg:px-4 text-xs lg:text-sm text-gray-700" x-text="`#${event.id}`"></td>
+                                    <td class="py-3 lg:py-4 px-3 lg:px-4">
+                                        <div class="flex items-center space-x-2 lg:space-x-3">
+                                            <div class="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-xs lg:text-sm flex-shrink-0">
+                                                <span x-text="event.type ? event.type.charAt(0).toUpperCase() : 'E'"></span>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-center space-x-2">
+                                                    <p class="text-xs lg:text-sm font-semibold text-gray-800 truncate" x-text="event.title"></p>
+                                                    <span x-show="event.status === 'en_curso' && event.meeting_url" 
+                                                          class="pulse-dot w-2 h-2 bg-red-500 rounded-full flex-shrink-0" 
+                                                          title="Transmisión en vivo"></span>
+                                                </div>
+                                                <p class="text-[10px] lg:text-xs text-gray-500" x-text="`${event.current_participants || 0} participantes`"></p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-3 lg:py-4 px-3 lg:px-4">
+                                        <span class="px-2 lg:px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-[10px] lg:text-xs font-medium" x-text="event.type || 'Evento'"></span>
+                                    </td>
+                                    <td class="py-3 lg:py-4 px-3 lg:px-4 text-xs lg:text-sm text-gray-600" x-text="formatDate(event.start_date, event.start_time)"></td>
+                                    <td class="py-3 lg:py-4 px-3 lg:px-4">
+                                        <span class="px-2 lg:px-3 py-1 rounded-full text-[10px] lg:text-xs font-medium flex items-center w-fit"
+                                              :class="getStatusClass(event.status)">
+                                            <span x-show="event.status === 'en_curso'" class="pulse-dot w-2 h-2 bg-green-500 rounded-full mr-1 lg:mr-2"></span>
+                                            <span x-text="getStatusText(event.status)"></span>
+                                        </span>
+                                    </td>
+                                    <td class="py-3 lg:py-4 px-3 lg:px-4">
+                                        <div class="flex items-center space-x-1 lg:space-x-2">
+                                            <a :href="`eventos-capacitacion.html#event-${event.id}`" class="text-purple-600 hover:text-purple-700 text-sm lg:text-base" title="Ver detalles">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a x-show="event.status === 'en_curso' && event.meeting_url" 
+                                               href="supervision-tiempo-real.html" 
+                                               class="text-red-600 hover:text-red-700 text-sm lg:text-base" 
+                                               title="Ver transmisión en vivo">
+                                                <i class="fas fa-video"></i>
+                                            </a>
+                                            <button class="text-gray-600 hover:text-gray-700 text-sm lg:text-base">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                    <div x-show="!loading && recentEvents.length === 0" class="text-center py-12">
+                        <i class="fas fa-calendar-times text-gray-300 text-4xl mb-4"></i>
+                        <p class="text-gray-600 font-semibold mb-2">No hay eventos recientes</p>
+                        <p class="text-sm text-gray-500">Crea tu primer evento para comenzar</p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+    </div>
+
+</body>
+</html>

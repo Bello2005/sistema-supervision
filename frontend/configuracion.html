@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración - Sistema de Supervisión</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="js/api.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        * { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+
+        .tab-active {
+            @apply bg-purple-100 text-purple-700 border-purple-300;
+        }
+
+        .tab-inactive {
+            @apply bg-white text-gray-600 border-gray-200 hover:bg-gray-50;
+        }
+    </style>
+</head>
+<body class="bg-gray-50" x-data="{
+    sidebarOpen: false,
+    activeTab: 'perfil',
+    showSuccess: false,
+    showError: false,
+    errorMessage: '',
+    loading: true,
+    saving: false,
+    userProfile: null,
+
+    // Formulario de perfil
+    profileForm: {
+        full_name: '',
+        email: '',
+        phone: '',
+        role: '',
+        bio: ''
+    },
+
+    // Formulario de seguridad
+    securityForm: {
+        current_password: '',
+        new_password: '',
+        confirm_password: ''
+    },
+
+    // Preferencias
+    preferences: {
+        notifications_email: true,
+        notifications_push: true,
+        notifications_reports: false,
+        theme: 'light',
+        language: 'es',
+        timezone: 'America/Bogota'
+    },
+
+    toasts: [],
+
+    async init() {
+        if (!api.getToken()) {
+            window.location.href = '/login.html';
+            return;
+        }
+
+        await this.loadProfile();
+    },
+
+    async loadProfile() {
+        try {
+            this.loading = true;
+            const response = await api.getProfile();
+
+            if (response.success) {
+                this.userProfile = response.data;
+
+                // Llenar formulario con datos actuales
+                this.profileForm.full_name = response.data.full_name || '';
+                this.profileForm.email = response.data.email || '';
+                this.profileForm.phone = response.data.phone || '';
+                this.profileForm.role = response.data.role || '';
+                this.profileForm.bio = response.data.bio || '';
+            } else {
+                throw new Error(response.message || 'Error al cargar perfil');
+            }
+        } catch (error) {
+            console.error('Error loading profile:', error);
+            this.showToast('Error al cargar el perfil: ' + error.message, 'error');
+            if (error.message.includes('401')) {
+                window.location.href = '/login.html';
+            }
+        } finally {
+            this.loading = false;
+        }
+    },
+
+    async saveProfile() {
+        try {
+            this.saving = true;
+
+            // Validaciones
+            if (!this.profileForm.full_name.trim()) {
+                this.showToast('El nombre completo es requerido', 'warning');
+                return;
+            }
+
+            if (!this.profileForm.email.trim()) {
+                this.showToast('El email es requerido', 'warning');
+                return;
+            }
+
+            const response = await api.updateProfile({
+                full_name: this.profileForm.full_name,
+                email: this.profileForm.email,
+                phone: this.profileForm.phone,
+                bio: this.profileForm.bio
+            });
+
+            if (response.success) {
+                this.userProfile = response.data;
+                this.showToast('Perfil actualizado exitosamente', 'success');
+                this.showSuccess = true;
+                setTimeout(() => this.showSuccess = false, 3000);
+            } else {
+                throw new Error(response.message || 'Error al actualizar perfil');
+            }
+        } catch (error) {
+            console.error('Error saving profile:', error);
+            this.showToast('Error al guardar: ' + error.message, 'error');
+        } finally {
+            this.saving = false;
+        }
+    },
+
+    async changePassword() {
+        try {
+            this.saving = true;
+
+            // Validaciones
+            if (!this.securityForm.current_password) {
+                this.showToast('Ingresa tu contraseña actual', 'warning');
+                return;
+            }
+
+            if (!this.securityForm.new_password) {
+                this.showToast('Ingresa una nueva contraseña', 'warning');
+                return;
+            }
+
+            if (this.securityForm.new_password.length < 6) {
+                this.showToast('La contraseña debe tener al menos 6 caracteres', 'warning');
+                return;
+            }
+
+            if (this.securityForm.new_password !== this.securityForm.confirm_password) {
+                this.showToast('Las contraseñas no coinciden', 'warning');
+                return;
+            }
+
+            // Aquí iría la llamada al API para cambiar contraseña
+            // const response = await api.changePassword(this.securityForm);
+
+            this.showToast('Contraseña actualizada exitosamente', 'success');
+
+            // Limpiar formulario
+            this.securityForm.current_password = '';
+            this.securityForm.new_password = '';
+            this.securityForm.confirm_password = '';
+
+        } catch (error) {
+            console.error('Error changing password:', error);
+            this.showToast('Error al cambiar contraseña: ' + error.message, 'error');
+        } finally {
+            this.saving = false;
+        }
+    },
+
+    async savePreferences() {
+        try {
+            this.saving = true;
+
+            // Aquí iría la llamada al API para guardar preferencias
+            // const response = await api.savePreferences(this.preferences);
+
+            this.showToast('Preferencias guardadas exitosamente', 'success');
+            this.showSuccess = true;
+            setTimeout(() => this.showSuccess = false, 3000);
+
+        } catch (error) {
+            console.error('Error saving preferences:', error);
+            this.showToast('Error al guardar preferencias: ' + error.message, 'error');
+        } finally {
+            this.saving = false;
+        }
+    },
+
+    showToast(message, type = 'info', duration = 4000) {
+        const toast = {
+            id: Date.now() + Math.random(),
+            message: message,
+            type: type,
+            show: true
+        };
+        this.toasts.push(toast);
+
+        setTimeout(() => {
+            toast.show = false;
+            setTimeout(() => {
+                const index = this.toasts.findIndex(t => t.id === toast.id);
+                if (index > -1) {
+                    this.toasts.splice(index, 1);
+                }
+            }, 300);
+        }, duration);
+    },
+
+    removeToast(id) {
+        const toast = this.toasts.find(t => t.id === id);
+        if (toast) {
+            toast.show = false;
+            setTimeout(() => {
+                const index = this.toasts.findIndex(t => t.id === id);
+                if (index > -1) {
+                    this.toasts.splice(index, 1);
+                }
+            }, 300);
+        }
+    },
+
+    getRoleDisplay(role) {
+        const roles = {
+            'admin': 'Administrador',
+            'supervisor': 'Supervisor',
+            'instructor': 'Instructor',
+            'viewer': 'Observador'
+        };
+        return roles[role] || role;
+    }
+}">
+
+    <!-- Mobile Overlay -->
+    <div x-show="sidebarOpen" 
+         @click="sidebarOpen = false"
+         x-transition:enter="transition-opacity ease-linear duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition-opacity ease-linear duration-300"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"></div>
+
+    <!-- Sidebar -->
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'" 
+            class="fixed left-0 top-0 h-full bg-white shadow-xl transition-all duration-300 z-50 w-64 lg:w-64">
+        <div class="flex flex-col h-full">
+            <div class="p-4 lg:p-6 gradient-bg">
+                <div class="flex items-center justify-between">
+                    <div class="text-white">
+                        <h1 class="text-lg lg:text-xl font-bold">SuperVision</h1>
+                        <p class="text-xs text-purple-200">Sistema de Monitoreo</p>
+                    </div>
+                    <button @click="sidebarOpen = !sidebarOpen" class="text-white hover:bg-white/20 p-2 rounded-lg lg:hidden">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <button @click="sidebarOpen = !sidebarOpen" class="text-white hover:bg-white/20 p-2 rounded-lg hidden lg:block">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+            <nav class="flex-1 p-2 lg:p-4 space-y-1 lg:space-y-2 overflow-y-auto">
+                <a href="index.html" class="flex items-center space-x-3 p-2 lg:p-3 rounded-xl hover:bg-gray-100 text-gray-700 transition-colors">
+                    <i class="fas fa-chart-line w-5 lg:w-6"></i>
+                    <span class="font-medium text-sm lg:text-base">Dashboard</span>
+                </a>
+                <a href="registro-evidencias.html" class="flex items-center space-x-3 p-2 lg:p-3 rounded-xl hover:bg-gray-100 text-gray-700 transition-colors">
+                    <i class="fas fa-camera w-5 lg:w-6"></i>
+                    <span class="font-medium text-sm lg:text-base">Registro de Evidencias</span>
+                </a>
+                <a href="listados.html" class="flex items-center space-x-3 p-2 lg:p-3 rounded-xl hover:bg-gray-100 text-gray-700 transition-colors">
+                    <i class="fas fa-list-alt w-5 lg:w-6"></i>
+                    <span class="font-medium text-sm lg:text-base">Listados y Registros</span>
+                </a>
+                <a href="supervision-tiempo-real.html" class="flex items-center space-x-3 p-2 lg:p-3 rounded-xl hover:bg-gray-100 text-gray-700 transition-colors">
+                    <i class="fas fa-eye w-5 lg:w-6"></i>
+                    <span class="font-medium text-sm lg:text-base">Supervisión en Vivo</span>
+                </a>
+                <a href="eventos-capacitacion.html" class="flex items-center space-x-3 p-2 lg:p-3 rounded-xl hover:bg-gray-100 text-gray-700 transition-colors">
+                    <i class="fas fa-calendar-check w-5 lg:w-6"></i>
+                    <span class="font-medium text-sm lg:text-base">Eventos y Capacitación</span>
+                </a>
+                <hr class="my-2 lg:my-4">
+                <a href="configuracion.html" class="flex items-center space-x-3 p-2 lg:p-3 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+                    <i class="fas fa-cog w-5 lg:w-6"></i>
+                    <span class="font-medium text-sm lg:text-base">Configuración</span>
+                </a>
+                <a href="ayuda.html" class="flex items-center space-x-3 p-2 lg:p-3 rounded-xl hover:bg-gray-100 text-gray-700 transition-colors">
+                    <i class="fas fa-question-circle w-5 lg:w-6"></i>
+                    <span class="font-medium text-sm lg:text-base">Ayuda</span>
+                </a>
+            </nav>
+            <div class="p-3 lg:p-4 border-t">
+                <div class="flex items-center space-x-2 lg:space-x-3 mb-3">
+                    <img :src="userProfile ? `https://ui-avatars.com/api/?name=${encodeURIComponent(userProfile.full_name || 'User')}&background=667eea&color=fff` : 'https://ui-avatars.com/api/?name=User&background=667eea&color=fff'"
+                         class="w-8 h-8 lg:w-10 lg:h-10 rounded-full flex-shrink-0" alt="User">
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs lg:text-sm font-semibold text-gray-700 truncate" x-text="userProfile ? userProfile.full_name : 'Usuario'"></p>
+                        <p class="text-[10px] lg:text-xs text-gray-500 truncate" x-text="userProfile ? getRoleDisplay(userProfile.role) : 'Usuario'"></p>
+                    </div>
+                </div>
+                <button @click="api.logout()" class="w-full flex items-center justify-center space-x-2 px-3 lg:px-4 py-2 lg:py-2.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-medium transition-colors text-sm lg:text-base">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Cerrar Sesión</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="lg:ml-64 transition-all duration-300">
+        <header class="bg-white shadow-sm sticky top-0 z-40">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between p-4 lg:p-6 gap-4">
+                <div class="flex items-center justify-between w-full lg:w-auto">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-3">
+                            <button @click="sidebarOpen = true" class="lg:hidden text-gray-600 hover:bg-gray-100 p-2 rounded-lg">
+                                <i class="fas fa-bars text-xl"></i>
+                            </button>
+                            <div class="min-w-0 flex-1">
+                                <h2 class="text-xl lg:text-2xl font-bold text-gray-800">Configuración del Sistema</h2>
+                                <p class="text-gray-500 text-xs lg:text-sm hidden sm:block">Personaliza tu experiencia y preferencias</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button @click="api.logout()" class="px-3 lg:px-4 py-2 text-xs lg:text-sm text-gray-600 hover:bg-gray-100 rounded-xl transition-colors whitespace-nowrap">
+                    <i class="fas fa-sign-out-alt mr-1 lg:mr-2"></i>Cerrar Sesión
+                </button>
+            </div>
+        </header>
+
+        <!-- Toast Container -->
+        <div class="fixed top-16 lg:top-20 right-2 lg:right-6 z-50 space-y-3" style="max-width: calc(100vw - 1rem); width: 100%; max-width: 400px;">
+            <template x-for="toast in toasts" :key="toast.id">
+                <div x-show="toast.show"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 transform translate-x-full"
+                     x-transition:enter-end="opacity-100 transform translate-x-0"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 transform translate-x-0"
+                     x-transition:leave-end="opacity-0 transform translate-x-full"
+                     class="bg-white rounded-lg shadow-2xl border-l-4 p-3 lg:p-4 flex items-start space-x-2 lg:space-x-3 w-full"
+                     :class="{
+                         'border-green-500': toast.type === 'success',
+                         'border-red-500': toast.type === 'error',
+                         'border-yellow-500': toast.type === 'warning',
+                         'border-blue-500': toast.type === 'info'
+                     }">
+                    <div class="flex-shrink-0">
+                        <i class="fas text-xl"
+                           :class="{
+                               'fa-check-circle text-green-500': toast.type === 'success',
+                               'fa-exclamation-circle text-red-500': toast.type === 'error',
+                               'fa-exclamation-triangle text-yellow-500': toast.type === 'warning',
+                               'fa-info-circle text-blue-500': toast.type === 'info'
+                           }"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-gray-800 break-words whitespace-pre-line" x-text="toast.message"></p>
+                    </div>
+                    <button @click="removeToast(toast.id)" class="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
+                        <i class="fas fa-times text-sm"></i>
+                    </button>
+                </div>
+            </template>
+        </div>
+
+        <main class="p-4 lg:p-6">
+            <!-- Loading State -->
+            <div x-show="loading" class="flex items-center justify-center py-12 lg:py-20">
+                <div class="text-center">
+                    <i class="fas fa-spinner fa-spin text-purple-600 text-3xl lg:text-4xl mb-3 lg:mb-4"></i>
+                    <p class="text-gray-600 text-sm lg:text-base">Cargando configuración...</p>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div x-show="!loading" class="max-w-6xl mx-auto">
+
+                <!-- Tabs Navigation -->
+                <div class="bg-white rounded-2xl shadow-lg p-4 lg:p-6 mb-4 lg:mb-6">
+                    <div class="flex flex-wrap gap-2 lg:gap-3">
+                        <button @click="activeTab = 'perfil'"
+                                :class="activeTab === 'perfil' ? 'tab-active' : 'tab-inactive'"
+                                class="flex items-center space-x-1 lg:space-x-2 px-3 lg:px-6 py-2 lg:py-3 rounded-xl border-2 font-medium transition-all text-sm">
+                            <i class="fas fa-user text-xs lg:text-base"></i>
+                            <span>Perfil</span>
+                        </button>
+
+                        <button @click="activeTab = 'seguridad'"
+                                :class="activeTab === 'seguridad' ? 'tab-active' : 'tab-inactive'"
+                                class="flex items-center space-x-1 lg:space-x-2 px-3 lg:px-6 py-2 lg:py-3 rounded-xl border-2 font-medium transition-all text-sm">
+                            <i class="fas fa-shield-alt text-xs lg:text-base"></i>
+                            <span>Seguridad</span>
+                        </button>
+
+                        <!-- <button @click="activeTab = 'preferencias'"
+                                :class="activeTab === 'preferencias' ? 'tab-active' : 'tab-inactive'"
+                                class="flex items-center space-x-2 px-6 py-3 rounded-xl border-2 font-medium transition-all">
+                            <i class="fas fa-sliders-h"></i>
+                            <span>Preferencias</span>
+                        </button> -->
+
+                        <!-- <button @click="activeTab = 'notificaciones'"
+                                :class="activeTab === 'notificaciones' ? 'tab-active' : 'tab-inactive'"
+                                class="flex items-center space-x-2 px-6 py-3 rounded-xl border-2 font-medium transition-all">
+                            <i class="fas fa-bell"></i>
+                            <span>Notificaciones</span>
+                        </button> -->
+                    </div>
+                </div>
+
+                <!-- Tab: Perfil -->
+                <div x-show="activeTab === 'perfil'" x-transition class="space-y-4 lg:space-y-6">
+
+                    <!-- Profile Header Card -->
+                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                        <div class="h-24 lg:h-32 gradient-bg"></div>
+                        <div class="px-4 lg:px-6 pb-4 lg:pb-6">
+                            <div class="flex flex-col sm:flex-row items-start sm:items-end -mt-12 lg:-mt-16 space-y-4 sm:space-y-0 sm:space-x-4 lg:sm:space-x-6">
+                                <div class="relative">
+                                    <img :src="userProfile ? `https://ui-avatars.com/api/?name=${encodeURIComponent(userProfile.full_name || 'User')}&background=667eea&color=fff&size=128` : 'https://ui-avatars.com/api/?name=User&background=667eea&color=fff&size=128'"
+                                         class="w-24 h-24 lg:w-32 lg:h-32 rounded-xl lg:rounded-2xl border-4 border-white shadow-lg">
+                                    <button class="absolute bottom-0 right-0 w-8 h-8 lg:w-10 lg:h-10 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shadow-lg text-xs lg:text-sm">
+                                        <i class="fas fa-camera"></i>
+                                    </button>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-xl lg:text-2xl font-bold text-gray-800 truncate" x-text="userProfile?.full_name || 'Usuario'"></h3>
+                                    <p class="text-gray-600" x-text="userProfile?.email || ''"></p>
+                                    <div class="flex items-center space-x-4 mt-2">
+                                        <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium" x-text="getRoleDisplay(userProfile?.role || 'viewer')"></span>
+                                        <span class="text-sm text-gray-500">
+                                            <i class="fas fa-calendar mr-1"></i>
+                                            Miembro desde <span x-text="userProfile?.created_at ? new Date(userProfile.created_at).toLocaleDateString('es-ES') : 'N/A'"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profile Form -->
+                    <div class="bg-white rounded-2xl shadow-lg p-4 lg:p-8">
+                        <h4 class="text-lg lg:text-xl font-bold text-gray-800 mb-4 lg:mb-6 flex items-center">
+                            <i class="fas fa-user-edit text-purple-600 mr-2 lg:mr-3 text-base lg:text-lg"></i>
+                            Información Personal
+                        </h4>
+
+                        <form @submit.prevent="saveProfile()" class="space-y-4 lg:space-y-6">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        Nombre Completo *
+                                    </label>
+                                    <input type="text"
+                                           x-model="profileForm.full_name"
+                                           required
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        Email *
+                                    </label>
+                                    <input type="email"
+                                           x-model="profileForm.email"
+                                           required
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        Teléfono
+                                    </label>
+                                    <input type="tel"
+                                           x-model="profileForm.phone"
+                                           placeholder="+57 300 123 4567"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        Rol
+                                    </label>
+                                    <input type="text"
+                                           :value="getRoleDisplay(profileForm.role)"
+                                           disabled
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-100 text-gray-600 cursor-not-allowed">
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        Contacta al administrador para cambiar tu rol
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    Biografía
+                                </label>
+                                <textarea rows="4"
+                                          x-model="profileForm.bio"
+                                          placeholder="Cuéntanos un poco sobre ti..."
+                                          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"></textarea>
+                                <p class="text-xs text-gray-500 mt-1" x-text="`${(profileForm.bio || '').length}/500 caracteres`"></p>
+                            </div>
+
+                            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-4 border-t">
+                                <button type="button"
+                                        @click="loadProfile()"
+                                        class="px-4 lg:px-6 py-2 lg:py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors text-sm">
+                                    <i class="fas fa-undo mr-1 lg:mr-2"></i>Restablecer
+                                </button>
+                                <button type="submit"
+                                        :disabled="saving"
+                                        :class="saving ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-xl'"
+                                        class="px-6 lg:px-8 py-2 lg:py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl font-medium transition-all text-sm">
+                                    <i :class="saving ? 'fa-spinner fa-spin' : 'fa-save'" class="fas mr-1 lg:mr-2"></i>
+                                    <span x-text="saving ? 'Guardando...' : 'Guardar Cambios'"></span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Tab: Seguridad -->
+                <div x-show="activeTab === 'seguridad'" x-transition class="space-y-4 lg:space-y-6">
+
+                    <!-- Change Password -->
+                    <div class="bg-white rounded-2xl shadow-lg p-4 lg:p-8">
+                        <h4 class="text-lg lg:text-xl font-bold text-gray-800 mb-4 lg:mb-6 flex items-center">
+                            <i class="fas fa-key text-purple-600 mr-2 lg:mr-3 text-base lg:text-lg"></i>
+                            Cambiar Contraseña
+                        </h4>
+
+                        <form @submit.prevent="changePassword()" class="space-y-4 lg:space-y-6 max-w-2xl">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    Contraseña Actual *
+                                </label>
+                                <input type="password"
+                                       x-model="securityForm.current_password"
+                                       required
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    Nueva Contraseña *
+                                </label>
+                                <input type="password"
+                                       x-model="securityForm.new_password"
+                                       required
+                                       minlength="6"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                <p class="text-xs text-gray-500 mt-1">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Mínimo 6 caracteres
+                                </p>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    Confirmar Nueva Contraseña *
+                                </label>
+                                <input type="password"
+                                       x-model="securityForm.confirm_password"
+                                       required
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            </div>
+
+                            <div class="flex items-center justify-end pt-4 border-t">
+                                <button type="submit"
+                                        :disabled="saving"
+                                        :class="saving ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-xl'"
+                                        class="w-full sm:w-auto px-6 lg:px-8 py-2 lg:py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl font-medium transition-all text-sm">
+                                    <i :class="saving ? 'fa-spinner fa-spin' : 'fa-lock'" class="fas mr-1 lg:mr-2"></i>
+                                    <span x-text="saving ? 'Actualizando...' : 'Actualizar Contraseña'"></span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Security Info -->
+                    <div class="bg-white rounded-2xl shadow-lg p-4 lg:p-8">
+                        <h4 class="text-lg lg:text-xl font-bold text-gray-800 mb-4 lg:mb-6 flex items-center">
+                            <i class="fas fa-shield-alt text-purple-600 mr-2 lg:mr-3 text-base lg:text-lg"></i>
+                            Información de Seguridad
+                        </h4>
+
+                        <div class="space-y-4">
+                            <div class="flex items-start space-x-4 p-4 bg-blue-50 rounded-xl">
+                                <i class="fas fa-info-circle text-blue-600 text-xl mt-1"></i>
+                                <div>
+                                    <p class="font-semibold text-gray-800">Última Sesión</p>
+                                    <p class="text-sm text-gray-600">Hoy a las 10:30 AM desde Chrome en Windows</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-4 p-4 bg-green-50 rounded-xl">
+                                <i class="fas fa-check-circle text-green-600 text-xl mt-1"></i>
+                                <div>
+                                    <p class="font-semibold text-gray-800">Autenticación de Dos Factores</p>
+                                    <p class="text-sm text-gray-600">Protege tu cuenta con una capa adicional de seguridad</p>
+                                    <button class="mt-2 text-sm text-purple-600 font-medium hover:text-purple-700">
+                                        Habilitar 2FA <i class="fas fa-arrow-right ml-1"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Preferencias -->
+                <div x-show="activeTab === 'preferencias'" x-transition class="space-y-6">
+
+                    <div class="bg-white rounded-2xl shadow-lg p-8">
+                        <h4 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+                            <i class="fas fa-paint-brush text-purple-600 mr-3"></i>
+                            Apariencia
+                        </h4>
+
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-3">
+                                    Tema
+                                </label>
+                                <div class="grid grid-cols-3 gap-4">
+                                    <button @click="preferences.theme = 'light'"
+                                            :class="preferences.theme === 'light' ? 'border-purple-500 bg-purple-50' : 'border-gray-200'"
+                                            class="p-4 border-2 rounded-xl hover:border-purple-300 transition-colors">
+                                        <i class="fas fa-sun text-3xl text-yellow-500 mb-2"></i>
+                                        <p class="font-medium text-gray-800">Claro</p>
+                                    </button>
+
+                                    <button @click="preferences.theme = 'dark'"
+                                            :class="preferences.theme === 'dark' ? 'border-purple-500 bg-purple-50' : 'border-gray-200'"
+                                            class="p-4 border-2 rounded-xl hover:border-purple-300 transition-colors">
+                                        <i class="fas fa-moon text-3xl text-purple-500 mb-2"></i>
+                                        <p class="font-medium text-gray-800">Oscuro</p>
+                                    </button>
+
+                                    <button @click="preferences.theme = 'auto'"
+                                            :class="preferences.theme === 'auto' ? 'border-purple-500 bg-purple-50' : 'border-gray-200'"
+                                            class="p-4 border-2 rounded-xl hover:border-purple-300 transition-colors">
+                                        <i class="fas fa-adjust text-3xl text-blue-500 mb-2"></i>
+                                        <p class="font-medium text-gray-800">Auto</p>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        Idioma
+                                    </label>
+                                    <select x-model="preferences.language"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                        <option value="es">Español</option>
+                                        <option value="en">English</option>
+                                        <option value="pt">Português</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        Zona Horaria
+                                    </label>
+                                    <select x-model="preferences.timezone"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                        <option value="America/Bogota">Bogotá (GMT-5)</option>
+                                        <option value="America/Mexico_City">Ciudad de México (GMT-6)</option>
+                                        <option value="America/Lima">Lima (GMT-5)</option>
+                                        <option value="America/Argentina/Buenos_Aires">Buenos Aires (GMT-3)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-end pt-4 border-t">
+                                <button @click="savePreferences()"
+                                        :disabled="saving"
+                                        :class="saving ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-xl'"
+                                        class="px-8 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl font-medium transition-all">
+                                    <i :class="saving ? 'fa-spinner fa-spin' : 'fa-save'" class="fas mr-2"></i>
+                                    <span x-text="saving ? 'Guardando...' : 'Guardar Preferencias'"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Notificaciones -->
+                <div x-show="activeTab === 'notificaciones'" x-transition class="space-y-6">
+
+                    <div class="bg-white rounded-2xl shadow-lg p-8">
+                        <h4 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+                            <i class="fas fa-bell text-purple-600 mr-3"></i>
+                            Preferencias de Notificaciones
+                        </h4>
+
+                        <div class="space-y-6">
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-800">Notificaciones por Email</p>
+                                    <p class="text-sm text-gray-600">Recibe actualizaciones importantes por correo</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" x-model="preferences.notifications_email" class="sr-only peer">
+                                    <div class="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-purple-600"></div>
+                                </label>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-800">Notificaciones Push</p>
+                                    <p class="text-sm text-gray-600">Alertas en tiempo real en tu navegador</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" x-model="preferences.notifications_push" class="sr-only peer">
+                                    <div class="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-purple-600"></div>
+                                </label>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-800">Reportes Semanales</p>
+                                    <p class="text-sm text-gray-600">Resumen semanal de actividades</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" x-model="preferences.notifications_reports" class="sr-only peer">
+                                    <div class="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-purple-600"></div>
+                                </label>
+                            </div>
+
+                            <div class="flex items-center justify-end pt-4 border-t">
+                                <button @click="savePreferences()"
+                                        :disabled="saving"
+                                        :class="saving ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-xl'"
+                                        class="px-8 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl font-medium transition-all">
+                                    <i :class="saving ? 'fa-spinner fa-spin' : 'fa-save'" class="fas mr-2"></i>
+                                    <span x-text="saving ? 'Guardando...' : 'Guardar Configuración'"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+</body>
+</html>

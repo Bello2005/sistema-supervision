@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Evidencias - Sistema de Supervisión</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="js/api.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .upload-area {
+            border: 3px dashed #d1d5db;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area.dragover {
+            border-color: #667eea;
+            background-color: #f3f4f6;
+        }
+
+        .preview-image {
+            object-fit: cover;
+            width: 100%;
+            height: 100%;
+        }
+
+        .thumbnail {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .thumbnail:hover .overlay {
+            opacity: 1;
+        }
+
+        .overlay {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50" x-data="{
+    sidebarOpen: false,
+    uploadedFiles: [],
+    evidenceType: 'foto',
+    eventId: '',
+    description: '',
+    location: '',
+    tags: [],
+    tagInput: '',
+    showSuccess: false,
+    loading: false,
+    events: [],
+    recentEvidences: [],
+    userProfile: null,
+    toasts: [],
+    showProfileMenu: false,
+    
+    async init() {
+        if (!api.getToken()) {
+            window.location.href = '/login.html';
+            return;
+        }
+        
+        await this.loadData();
+    },
+    
+    async loadData() {
+        try {
+            // Cargar perfil
+            const profileRes = await api.getProfile();
+            if (profileRes.success) {
+                this.userProfile = profileRes.data;
+            }
+            
+            // Cargar eventos para el select
+            const eventsRes = await api.getEvents();
+            if (eventsRes.success) {
+                // Filtrar solo eventos programados o en curso
+                this.events = (eventsRes.data || []).filter(e => 
+                    e.status === 'programado' || e.status === 'en_curso'
+                );
+            }
+            
+            // Cargar evidencias recientes
+            const evidencesRes = await api.getRecentEvidences(3);
+            if (evidencesRes.success) {
+                this.recentEvidences = evidencesRes.data || [];
+            }
+        } catch (error) {
+            console.error('Error loading data:', error);
+            if (error.message.includes('401')) {
+                window.location.href = '/login.html';
+            }
+        }
+    },
+    
+    handleFileUpload(files) {
+        let addedCount = 0;
+        for (let file of files) {
+            if (file.size > 50 * 1024 * 1024) {
+                this.showToast(`El archivo ${file.name} es demasiado grande. Máximo 50MB.`, 'error');
+                continue;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.uploadedFiles.push({
+                    file: file,
+                    name: file.name,
+                    size: (file.size / 1024 / 1024).toFixed(2),
+                    type: file.type.includes('video') ? 'video' : file.type.includes('audio') ? 'audio' : file.type.includes('pdf') || file.type.includes('document') ? 'document' : 'image',
+                    preview: e.target.result,
+                    date: new Date().toLocaleString('es-ES')
+                });
+                addedCount++;
+                if (addedCount === files.length) {
+                    this.showToast(`${addedCount} archivo(s) agregado(s) correctamente`, 'success', 3000);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    },
+    
+    removeFile(index) {
+        this.uploadedFiles.splice(index, 1);
+    },
+    
+    addTag() {
+        if (this.tagInput.trim() && !this.tags.includes(this.tagInput.trim())) {
+            this.tags.push(this.tagInput.trim());
+            this.tagInput = '';
+        }
+    },
+    
+    removeTag(index) {
+        this.tags.splice(index, 1);
+    },
+    
+    showToast(message, type = 'success', duration = 5000) {
+        const toast = {
+            id: Date.now(),
+            message: message,
+            type: type, // success, error, warning, info
+            show: true
+        };
+        this.toasts.push(toast);
+        
+        setTimeout(() => {
+            toast.show = false;
+            setTimeout(() => {
+                const index = this.toasts.findIndex(t => t.id === toast.id);
+                if (index > -1) {
+                    this.toasts.splice(index, 1);
+                }
+            }, 300);
+        }, duration);
+    },
+    
+    removeToast(id) {
+        const toast = this.toasts.find(t => t.id === id);
+        if (toast) {
+            toast.show = false;
+            setTimeout(() => {
+                const index = this.toasts.findIndex(t => t.id === id);
+                if (index > -1) {
+                    this.toasts.splice(index, 1);
+                }
+            }, 300);
+        }
+    },
+    
+    async submitEvidence() {
+        if (this.uploadedFiles.length === 0) {
+            this.showToast('Por favor, selecciona al menos un archivo', 'warning');
+            return;
+        }
+        
+        if (!this.eventId) {
+            this.showToast('Por favor, selecciona un evento', 'warning');
+            return;
+        }
+        
+        try {
+            this.loading = true;
+            
+            const evidenceData = {
+                event_id: parseInt(this.eventId),
+                title: `Evidencia - ${new Date().toLocaleString('es-ES')}`,
+                description: this.description,
+                evidence_type: this.evidenceType,
+                location: this.location,
+                tags: this.tags
+            };
+            
+            const files = this.uploadedFiles.map(uf => uf.file);
+            
+            const response = await api.createEvidence(evidenceData, files);
+            
+            if (response.success) {
+                this.showToast('¡Evidencias registradas exitosamente!', 'success', 4000);
+                this.showSuccess = true;
+                
+                // Limpiar formulario después de un breve delay
+                setTimeout(() => {
+                    this.uploadedFiles = [];
+                    this.description = '';
+                    this.location = '';
+                    this.tags = [];
+                    this.eventId = '';
+                    this.showSuccess = false;
+                    this.loadData(); // Recargar datos
+                }, 2000);
+            } else {
+                throw new Error(response.message || 'Error al crear evidencia');
+            }
+        } catch (error) {
+            console.error('Error submitting evidence:', error);
+            this.showToast('Error al registrar evidencia: ' + error.message, 'error', 6000);
+        } finally {
+            this.loading = false;
+        }
+    },
+    
+    formatTime(dateString) {
+        if (!dateString) return 'Hace un momento';
+        const date = new Date(dateString);
+        const now = new Date();
+        const diff = now - date;
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        
+        if (minutes < 1) return 'Hace un momento';
+        if (minutes < 60) return `Hace ${minutes} min`;
+        return `Hace ${hours} hora${hours > 1 ? 's' : ''}`;
+    }
+}">
+
+    <!-- Mobile Overlay -->
+    <div x-show="sidebarOpen" 
+         @click="sidebarOpen = false"
+         x-transition:enter="transition-opacity ease-linear duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition-opacity ease-linear duration-300"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"></div>
+
+    <!-- Sidebar -->
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'" 
+            class="fixed left-0 top-0 h-full bg-white shadow-xl transition-all duration-300 z-50 w-64 lg:w-64">
+        <div class="flex flex-col h-full">
+            <div class="p-4 lg:p-6 gradient-bg">
+                <div class="flex items-center justify-between">
+                    <div class="text-white">
+                        <h1 class="text-lg lg:text-xl font-bold">SuperVision</h1>
+                        <p class="text-xs text-purple-200">Sistema de Monitoreo</p>
+                    </div>
+                    <button @click="sidebarOpen = !sidebarOpen" class="text-white hover:bg-white/20 p-2 rounded-lg lg:hidden">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <button @click="sidebarOpen = !sidebarOpen" class="text-white hover:bg-white/20 p-2 rounded-lg hidden lg:block">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+
+            <nav class="flex-1 p-2 lg:p-4 space-y-1 lg:space-y-2 overflow-y-auto">
+                <a href="index.html" class="flex items-center space-x-3 p-2 lg:p-3 rounded-xl hover:bg-gray-100 text-gray-700 transition-colors">
+                    <i class="fas fa-chart-line w-5 lg:w-6"></i>
+                    <span class="font-medium text-sm lg:text-base">Dashboard</span>
+                </a>
+
+                <a href="registro-evidencias.html" class="flex items-center space-x-3 p-2 lg:p-3 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+                    <i class="fas fa-camera w-5 lg:w-6"></i>
+                    <span class="font-medium text-sm lg:text-base">Registro de Evidencias</span>
+                </a>
+
+                <a href="listados.html" class="flex items-center space-x-3 p-2 lg:p-3 rounded-xl hover:bg-gray-100 text-gray-700 transition-colors">
+                    <i class="fas fa-list-alt w-5 lg:w-6"></i>
+                    <span class="font-medium text-sm lg:text-base">Listados y Registros</span>
+                </a>
+
+                <a href="supervision-tiempo-real.html" class="flex items-center space-x-3 p-2 lg:p-3 rounded-xl hover:bg-gray-100 text-gray-700 transition-colors">
+                    <i class="fas fa-eye w-5 lg:w-6"></i>
+                    <span class="font-medium text-sm lg:text-base">Supervisión en Vivo</span>
+                </a>
+
+                <a href="eventos-capacitacion.html" class="flex items-center space-x-3 p-2 lg:p-3 rounded-xl hover:bg-gray-100 text-gray-700 transition-colors">
+                    <i class="fas fa-calendar-check w-5 lg:w-6"></i>
+                    <span class="font-medium text-sm lg:text-base">Eventos y Capacitación</span>
+                </a>
+
+                <hr class="my-2 lg:my-4">
+
+                <a href="configuracion.html" class="flex items-center space-x-3 p-2 lg:p-3 rounded-xl hover:bg-gray-100 text-gray-700 transition-colors">
+                    <i class="fas fa-cog w-5 lg:w-6"></i>
+                    <span class="font-medium text-sm lg:text-base">Configuración</span>
+                </a>
+
+                <a href="ayuda.html" class="flex items-center space-x-3 p-2 lg:p-3 rounded-xl hover:bg-gray-100 text-gray-700 transition-colors">
+                    <i class="fas fa-question-circle w-5 lg:w-6"></i>
+                    <span class="font-medium text-sm lg:text-base">Ayuda</span>
+                </a>
+            </nav>
+
+            <div class="p-3 lg:p-4 border-t">
+                <div class="flex items-center space-x-2 lg:space-x-3 mb-3">
+                    <img :src="userProfile ? `https://ui-avatars.com/api/?name=${encodeURIComponent(userProfile.full_name || 'User')}&background=667eea&color=fff` : 'https://ui-avatars.com/api/?name=User&background=667eea&color=fff'"
+                         class="w-8 h-8 lg:w-10 lg:h-10 rounded-full flex-shrink-0" alt="User">
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs lg:text-sm font-semibold text-gray-700 truncate" x-text="userProfile ? userProfile.full_name : 'Usuario'"></p>
+                        <p class="text-[10px] lg:text-xs text-gray-500 truncate" x-text="userProfile ? (userProfile.role || 'Usuario').charAt(0).toUpperCase() + (userProfile.role || 'Usuario').slice(1) : 'Usuario'"></p>
+                    </div>
+                </div>
+                <button @click="api.logout()" class="w-full flex items-center justify-center space-x-2 px-3 lg:px-4 py-2 lg:py-2.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-medium transition-colors text-sm lg:text-base">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Cerrar Sesión</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="lg:ml-64 transition-all duration-300">
+
+        <!-- Top Bar -->
+        <header class="bg-white shadow-sm sticky top-0 z-40">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between p-4 lg:p-6 gap-4">
+                <div class="flex items-center justify-between w-full lg:w-auto">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-3">
+                            <button @click="sidebarOpen = true" class="lg:hidden text-gray-600 hover:bg-gray-100 p-2 rounded-lg">
+                                <i class="fas fa-bars text-xl"></i>
+                            </button>
+                            <div class="min-w-0 flex-1">
+                                <h2 class="text-xl lg:text-2xl font-bold text-gray-800">Registro de Evidencias</h2>
+                                <p class="text-gray-500 text-xs lg:text-sm hidden sm:block">Carga y administra evidencias fotográficas y de video</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </header>
+
+        <!-- Toast Container -->
+        <div class="fixed top-16 lg:top-20 right-2 lg:right-6 z-50 space-y-3" style="max-width: calc(100vw - 1rem); width: 100%; max-width: 400px;">
+            <template x-for="toast in toasts" :key="toast.id">
+                <div x-show="toast.show"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 transform translate-x-full"
+                     x-transition:enter-end="opacity-100 transform translate-x-0"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 transform translate-x-0"
+                     x-transition:leave-end="opacity-0 transform translate-x-full"
+                     class="bg-white rounded-lg shadow-2xl border-l-4 p-3 lg:p-4 flex items-start space-x-2 lg:space-x-3 w-full"
+                     :class="{
+                         'border-green-500': toast.type === 'success',
+                         'border-red-500': toast.type === 'error',
+                         'border-yellow-500': toast.type === 'warning',
+                         'border-blue-500': toast.type === 'info'
+                     }">
+                    <div class="flex-shrink-0">
+                        <i class="fas text-xl"
+                           :class="{
+                               'fa-check-circle text-green-500': toast.type === 'success',
+                               'fa-exclamation-circle text-red-500': toast.type === 'error',
+                               'fa-exclamation-triangle text-yellow-500': toast.type === 'warning',
+                               'fa-info-circle text-blue-500': toast.type === 'info'
+                           }"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-gray-800 break-words whitespace-pre-line" x-text="toast.message"></p>
+                    </div>
+                    <button @click="removeToast(toast.id)" class="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
+                        <i class="fas fa-times text-sm"></i>
+                    </button>
+                </div>
+            </template>
+        </div>
+
+        <!-- Success Alert (Legacy - mantiene compatibilidad) -->
+        <div x-show="showSuccess" x-transition class="mx-6 mt-6">
+            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg flex items-center">
+                <i class="fas fa-check-circle text-2xl mr-4"></i>
+                <div>
+                    <p class="font-bold">Evidencias registradas exitosamente</p>
+                    <p class="text-sm">Tus archivos han sido guardados y procesados correctamente.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="p-4 lg:p-6">
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+
+                <!-- Upload Form -->
+                <div class="lg:col-span-2 space-y-4 lg:space-y-6">
+
+                    <!-- Upload Area -->
+                    <div class="bg-white rounded-2xl shadow-lg p-4 lg:p-6">
+                        <h3 class="text-lg lg:text-xl font-bold text-gray-800 mb-4 lg:mb-6 flex items-center">
+                            <i class="fas fa-cloud-upload-alt text-purple-600 mr-2 lg:mr-3 text-base lg:text-lg"></i>
+                            Cargar Evidencias
+                        </h3>
+
+                        <div class="upload-area rounded-xl p-6 lg:p-12 text-center"
+                             @dragover.prevent="$el.classList.add('dragover')"
+                             @dragleave.prevent="$el.classList.remove('dragover')"
+                             @drop.prevent="$el.classList.remove('dragover'); handleFileUpload($event.dataTransfer.files)">
+
+                            <div class="mb-4 lg:mb-6">
+                                <i class="fas fa-cloud-upload-alt text-4xl lg:text-6xl text-purple-400 mb-3 lg:mb-4"></i>
+                                <p class="text-base lg:text-lg font-semibold text-gray-700 mb-2">Arrastra y suelta tus archivos aquí</p>
+                                <p class="text-xs lg:text-sm text-gray-500 mb-3 lg:mb-4">o haz clic para seleccionar</p>
+                            </div>
+
+                            <input type="file" id="fileInput" multiple accept="image/*,video/*" class="hidden"
+                                   @change="handleFileUpload($event.target.files)">
+
+                            <label for="fileInput" class="inline-block px-4 lg:px-6 py-2 lg:py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl cursor-pointer hover:from-purple-600 hover:to-purple-700 transition-all font-medium text-sm lg:text-base">
+                                <i class="fas fa-folder-open mr-1 lg:mr-2"></i>
+                                Seleccionar Archivos
+                            </label>
+
+                            <p class="text-[10px] lg:text-xs text-gray-400 mt-3 lg:mt-4">Soporta: JPG, PNG, MP4, MOV (Max 50MB por archivo)</p>
+                        </div>
+                    </div>
+
+                    <!-- Form Details -->
+                    <div class="bg-white rounded-2xl shadow-lg p-4 lg:p-6">
+                        <h3 class="text-lg lg:text-xl font-bold text-gray-800 mb-4 lg:mb-6 flex items-center">
+                            <i class="fas fa-info-circle text-blue-600 mr-2 lg:mr-3 text-base lg:text-lg"></i>
+                            Detalles de la Evidencia
+                        </h3>
+
+                        <div class="space-y-4">
+                            <!-- Event Selection -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i class="fas fa-calendar-alt text-purple-600 mr-2"></i>
+                                    Evento Asociado
+                                </label>
+                                <select x-model="eventId" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                    <option value="">Seleccionar evento...</option>
+                                    <template x-for="event in events" :key="event.id">
+                                        <option :value="event.id" x-text="`${event.title} #${event.id}`"></option>
+                                    </template>
+                                </select>
+                            </div>
+
+                            <!-- Evidence Type -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i class="fas fa-tag text-purple-600 mr-2"></i>
+                                    Tipo de Evidencia
+                                </label>
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 lg:gap-3">
+                                    <button @click="evidenceType = 'foto'"
+                                            :class="evidenceType === 'foto' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700'"
+                                            class="px-3 lg:px-4 py-2 lg:py-3 rounded-xl font-medium transition-all hover:shadow-lg text-sm">
+                                        <i class="fas fa-camera block mb-1 text-base lg:text-lg"></i>
+                                        Foto
+                                    </button>
+                                    <button @click="evidenceType = 'video'"
+                                            :class="evidenceType === 'video' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700'"
+                                            class="px-3 lg:px-4 py-2 lg:py-3 rounded-xl font-medium transition-all hover:shadow-lg text-sm">
+                                        <i class="fas fa-video block mb-1 text-base lg:text-lg"></i>
+                                        Video
+                                    </button>
+                                    <button @click="evidenceType = 'documento'"
+                                            :class="evidenceType === 'documento' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700'"
+                                            class="px-3 lg:px-4 py-2 lg:py-3 rounded-xl font-medium transition-all hover:shadow-lg text-sm">
+                                        <i class="fas fa-file-alt block mb-1 text-base lg:text-lg"></i>
+                                        Documento
+                                    </button>
+                                    <button @click="evidenceType = 'audio'"
+                                            :class="evidenceType === 'audio' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700'"
+                                            class="px-3 lg:px-4 py-2 lg:py-3 rounded-xl font-medium transition-all hover:shadow-lg text-sm">
+                                        <i class="fas fa-microphone block mb-1 text-base lg:text-lg"></i>
+                                        Audio
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Location -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i class="fas fa-map-marker-alt text-purple-600 mr-2"></i>
+                                    Ubicación
+                                </label>
+                                <div class="relative">
+                                    <input type="text" x-model="location" placeholder="Ej: Sala de conferencias A, Edificio Principal"
+                                           class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                    <button class="absolute right-3 top-3 text-purple-600 hover:text-purple-700">
+                                        <i class="fas fa-crosshairs"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i class="fas fa-align-left text-purple-600 mr-2"></i>
+                                    Descripción
+                                </label>
+                                <textarea x-model="description" rows="4" placeholder="Describe brevemente la evidencia..."
+                                          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"></textarea>
+                                <p class="text-xs text-gray-500 mt-2" x-text="`${description.length}/500 caracteres`"></p>
+                            </div>
+
+                            <!-- Tags -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i class="fas fa-tags text-purple-600 mr-2"></i>
+                                    Etiquetas
+                                </label>
+                                <div class="flex flex-wrap gap-2 mb-2">
+                                    <template x-for="(tag, index) in tags" :key="index">
+                                        <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm flex items-center">
+                                            <span x-text="tag"></span>
+                                            <button @click="removeTag(index)" class="ml-2 hover:text-purple-900"><i class="fas fa-times text-xs"></i></button>
+                                        </span>
+                                    </template>
+                                </div>
+                                <div class="flex gap-2">
+                                    <input type="text" x-model="tagInput" @keyup.enter="addTag()" placeholder="Agregar etiqueta... (presiona Enter)"
+                                           class="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                    <button @click="addTag()" type="button" class="px-4 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                        <button class="px-4 lg:px-6 py-2 lg:py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-all text-sm">
+                            <i class="fas fa-times mr-1 lg:mr-2"></i>
+                            Cancelar
+                        </button>
+                        <button @click="submitEvidence()"
+                                :disabled="uploadedFiles.length === 0 || loading || !eventId"
+                                :class="(uploadedFiles.length === 0 || loading || !eventId) ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-xl'"
+                                class="px-6 lg:px-8 py-2 lg:py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl font-medium transition-all text-sm">
+                            <i :class="loading ? 'fas fa-spinner fa-spin' : 'fas fa-save'" class="mr-1 lg:mr-2"></i>
+                            <span x-text="loading ? 'Guardando...' : 'Guardar Evidencias'"></span>
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- Preview & Info -->
+                <div class="space-y-4 lg:space-y-6">
+
+                    <!-- Upload Progress -->
+                    <div class="bg-white rounded-2xl shadow-lg p-4 lg:p-6">
+                        <h3 class="text-base lg:text-lg font-bold text-gray-800 mb-3 lg:mb-4 flex items-center">
+                            <i class="fas fa-tasks text-green-600 mr-2 text-sm lg:text-base"></i>
+                            Archivos Cargados
+                            <span class="ml-auto text-xs lg:text-sm text-purple-600" x-text="`${uploadedFiles.length} archivo(s)`"></span>
+                        </h3>
+
+                        <div x-show="uploadedFiles.length === 0" class="text-center py-8">
+                            <i class="fas fa-inbox text-4xl text-gray-300 mb-3"></i>
+                            <p class="text-sm text-gray-500">No hay archivos cargados</p>
+                        </div>
+
+                        <div class="space-y-2 lg:space-y-3">
+                            <template x-for="(file, index) in uploadedFiles" :key="index">
+                                <div class="border border-gray-200 rounded-xl p-2 lg:p-3 hover:border-purple-300 transition-all">
+                                    <div class="flex items-start space-x-2 lg:space-x-3">
+                                        <div class="w-12 h-12 lg:w-16 lg:h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                            <img :src="file.preview" x-show="file.type === 'image'" class="w-full h-full object-cover">
+                                            <div x-show="file.type === 'video'" class="w-full h-full flex items-center justify-center bg-purple-100">
+                                                <i class="fas fa-video text-purple-600 text-base lg:text-xl"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-xs lg:text-sm font-semibold text-gray-800 truncate" x-text="file.name"></p>
+                                            <p class="text-[10px] lg:text-xs text-gray-500" x-text="`${file.size} MB`"></p>
+                                            <div class="mt-1 lg:mt-2 bg-gray-200 rounded-full h-1 lg:h-1.5">
+                                                <div class="bg-green-500 h-full rounded-full" style="width: 100%"></div>
+                                            </div>
+                                        </div>
+                                        <button @click="removeFile(index)" class="text-red-500 hover:text-red-700 flex-shrink-0 p-1">
+                                            <i class="fas fa-trash-alt text-sm lg:text-base"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Quick Info -->
+                    <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg p-4 lg:p-6 text-white">
+                        <h3 class="text-base lg:text-lg font-bold mb-3 lg:mb-4 flex items-center">
+                            <i class="fas fa-lightbulb mr-2 text-sm lg:text-base"></i>
+                            Consejos Rápidos
+                        </h3>
+                        <ul class="space-y-2 lg:space-y-3 text-xs lg:text-sm">
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle mt-1 mr-2 flex-shrink-0"></i>
+                                <span>Asegúrate de que las imágenes sean claras y legibles</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle mt-1 mr-2 flex-shrink-0"></i>
+                                <span>Los videos no deben exceder 50MB</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle mt-1 mr-2 flex-shrink-0"></i>
+                                <span>Usa etiquetas para facilitar la búsqueda</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle mt-1 mr-2 flex-shrink-0"></i>
+                                <span>Asocia siempre la evidencia a un evento</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Recent Uploads -->
+                    <div class="bg-white rounded-2xl shadow-lg p-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">Últimas Evidencias</h3>
+                        <div class="space-y-3">
+                            <template x-for="evidence in recentEvidences" :key="evidence.id">
+                                <div class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                                    <div class="w-12 h-12 rounded-lg flex items-center justify-center"
+                                         :class="{
+                                             'bg-blue-100': evidence.evidence_type === 'foto',
+                                             'bg-purple-100': evidence.evidence_type === 'video',
+                                             'bg-green-100': evidence.evidence_type === 'documento',
+                                             'bg-orange-100': evidence.evidence_type === 'audio'
+                                         }">
+                                        <i class="text-lg"
+                                           :class="{
+                                               'fas fa-image text-blue-600': evidence.evidence_type === 'foto',
+                                               'fas fa-video text-purple-600': evidence.evidence_type === 'video',
+                                               'fas fa-file-alt text-green-600': evidence.evidence_type === 'documento',
+                                               'fas fa-microphone text-orange-600': evidence.evidence_type === 'audio'
+                                           }"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-gray-800 truncate" x-text="evidence.title"></p>
+                                        <p class="text-xs text-gray-500" x-text="formatTime(evidence.created_at)"></p>
+                                    </div>
+                                </div>
+                            </template>
+                            <div x-show="recentEvidences.length === 0" class="text-center py-4">
+                                <i class="fas fa-inbox text-gray-300 text-2xl mb-2"></i>
+                                <p class="text-xs text-gray-500">No hay evidencias recientes</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+</body>
+</html>

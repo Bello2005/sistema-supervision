@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+yarn.lock
+# Note: package-lock.json should be committed to ensure consistent builds
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Uploads
+uploads/*
+!uploads/.gitkeep
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing
+coverage/
+.nyc_output/
+
+# Production
+dist/
+build/
