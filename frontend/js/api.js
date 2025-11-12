@@ -19,7 +19,7 @@ const API_BASE_URL = (() => {
   
   // Por defecto, usar ruta relativa (mismo dominio)
   // Para producción con dominio diferente, actualizar esta línea:
-  // return 'https://tu-backend.railway.app/api';
+  // return 'https://supervision-backend.onrender.com/api';
   return '/api';
 })();
 

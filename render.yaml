@@ -1,0 +1,40 @@
+# Render Blueprint Configuration
+# Sistema de Supervisión - Backend API
+# RES N° 215 DE 2025 - RESGUARDO INDÍGENA CATRÚ, DUBASA Y ANCOSÓ
+
+services:
+  # Backend API Service
+  - type: web
+    name: supervision-backend
+    env: node
+    plan: free  # Cambia a 'starter' o 'standard' para producción
+    region: oregon  # Cambia según tu región: oregon, frankfurt, singapore, mumbai, tokyo
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    rootDir: backend
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      # IMPORTANTE: Configura estas variables en el dashboard de Render
+      # después de crear el servicio, o úsalas como secrets
+      - key: DB_HOST
+        sync: false  # Debes configurarlo manualmente
+      - key: DB_PORT
+        value: 5432
+      - key: DB_NAME
+        sync: false  # Debes configurarlo manualmente
+      - key: DB_USER
+        sync: false  # Debes configurarlo manualmente
+      - key: DB_PASSWORD
+        sync: false  # Debes configurarlo manualmente (usa secret)
+      - key: JWT_SECRET
+        generateValue: true  # Render generará un valor aleatorio
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: CORS_ORIGIN
+        sync: false  # Configura con la URL de tu frontend
+      - key: FRONTEND_URL
+        sync: false  # Configura con la URL de tu frontend
+

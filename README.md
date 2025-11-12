@@ -288,13 +288,13 @@ Railway es ideal para deployment rápido y fácil.
      ```javascript
      const API_BASE_URL = window.location.origin.includes('localhost')
        ? 'http://localhost:3000/api'
-       : 'https://tu-backend.railway.app/api';
+       : 'https://supervision-backend.onrender.com/api';
      ```
 
 3. **Configurar Variables de Entorno en Vercel** (si es necesario)
    - Ve a tu proyecto en Vercel
    - Settings → Environment Variables
-   - Añade: `VITE_API_URL=https://tu-backend.railway.app/api`
+   - Añade: `VITE_API_URL=https://supervision-backend.onrender.com/api`
 
 4. **Redeploy**
    ```bash
@@ -593,11 +593,12 @@ Si encuentras problemas durante el deployment:
 **Render elimina la base de datos gratuita después de 90 días.** 
 
 Para una solución **100% GRATIS Y PERMANENTE**, consulta:
-- **[GUIA-NEON-RENDER.md](./GUIA-NEON-RENDER.md)** - ⭐ **RECOMENDADA** - Neon (BD) + Render (Backend/Frontend) = **$0/mes permanente**
+- **[GUIA-DEPLOY-GRATIS.md](./GUIA-DEPLOY-GRATIS.md)** - ⭐ **NUEVA GUÍA COMPLETA** - Opciones 100% gratuitas con Neon, Supabase, Railway, Render y Vercel
+- **[GUIA-NEON-RENDER.md](./GUIA-NEON-RENDER.md)** - Neon (BD) + Render (Backend/Frontend) = **$0/mes permanente**
 - **[GUIA-SUPABASE-RAILWAY.md](./GUIA-SUPABASE-RAILWAY.md)** - Supabase (BD) + Railway (Backend) + Vercel (Frontend)
 - **[GUIA-HOSTING-PERMANENTE.md](./GUIA-HOSTING-PERMANENTE.md)** - Comparación de todas las opciones
 
-**⭐ Mejor opción GRATIS**: **Neon (BD permanente) + Render (Backend/Frontend)** = **$0/mes, sin eliminaciones**
+**⭐ Mejor opción GRATIS**: **Neon (BD permanente) + Render (Backend) + Vercel (Frontend)** = **$0/mes, sin eliminaciones**
 
 ---
 
