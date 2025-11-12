@@ -588,6 +588,16 @@ Si encuentras problemas durante el deployment:
 
 **📖 Para una guía más detallada, consulta [DEPLOYMENT.md](./DEPLOYMENT.md)**
 
+### ⚠️ IMPORTANTE: Hosting Permanente
+
+**Render elimina la base de datos gratuita después de 90 días.** 
+
+Para una solución **permanente y gratuita**, consulta:
+- **[GUIA-SUPABASE-RAILWAY.md](./GUIA-SUPABASE-RAILWAY.md)** - Guía paso a paso (RECOMENDADA)
+- **[GUIA-HOSTING-PERMANENTE.md](./GUIA-HOSTING-PERMANENTE.md)** - Comparación de opciones
+
+**Mejor opción**: Supabase (BD) + Railway (Backend) + Vercel (Frontend) = **$0/mes permanente**
+
 ---
 
 ## 🎯 Funcionalidades Implementadas
