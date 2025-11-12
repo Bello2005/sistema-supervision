@@ -588,15 +588,16 @@ Si encuentras problemas durante el deployment:
 
 **📖 Para una guía más detallada, consulta [DEPLOYMENT.md](./DEPLOYMENT.md)**
 
-### ⚠️ IMPORTANTE: Hosting Permanente
+### ⚠️ IMPORTANTE: Hosting Permanente y Gratis
 
 **Render elimina la base de datos gratuita después de 90 días.** 
 
-Para una solución **permanente y gratuita**, consulta:
-- **[GUIA-SUPABASE-RAILWAY.md](./GUIA-SUPABASE-RAILWAY.md)** - Guía paso a paso (RECOMENDADA)
-- **[GUIA-HOSTING-PERMANENTE.md](./GUIA-HOSTING-PERMANENTE.md)** - Comparación de opciones
+Para una solución **100% GRATIS Y PERMANENTE**, consulta:
+- **[GUIA-NEON-RENDER.md](./GUIA-NEON-RENDER.md)** - ⭐ **RECOMENDADA** - Neon (BD) + Render (Backend/Frontend) = **$0/mes permanente**
+- **[GUIA-SUPABASE-RAILWAY.md](./GUIA-SUPABASE-RAILWAY.md)** - Supabase (BD) + Railway (Backend) + Vercel (Frontend)
+- **[GUIA-HOSTING-PERMANENTE.md](./GUIA-HOSTING-PERMANENTE.md)** - Comparación de todas las opciones
 
-**Mejor opción**: Supabase (BD) + Railway (Backend) + Vercel (Frontend) = **$0/mes permanente**
+**⭐ Mejor opción GRATIS**: **Neon (BD permanente) + Render (Backend/Frontend)** = **$0/mes, sin eliminaciones**
 
 ---
 
