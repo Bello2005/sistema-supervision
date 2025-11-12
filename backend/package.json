@@ -8,6 +8,7 @@
     "dev": "nodemon src/server.js",
     "migrate": "node src/database/migrate.js",
     "seed": "node src/database/seed-script.js",
+    "fix-passwords": "node src/database/fix-passwords.js",
     "test": "jest --coverage"
   },
   "keywords": [
