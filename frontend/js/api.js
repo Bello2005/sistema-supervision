@@ -9,7 +9,7 @@
 const API_BASE_URL = (() => {
   // Si estamos en localhost, usar el backend local
   if (window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1')) {
-    return 'http://localhost:3000/api';
+    return 'http://localhost:3001/api';
   }
   
   // Si hay una variable de entorno configurada, usarla
@@ -17,9 +17,8 @@ const API_BASE_URL = (() => {
     return window.API_BASE_URL;
   }
   
-  // Por defecto, usar la URL del backend en Render
-  // Para producción con dominio diferente, actualizar esta línea:
-  return 'https://supervision-backend-g9ib.onrender.com/api';
+  // Por defecto, usar la URL del backend en producción
+  return 'https://api.dirsoft.cloud/api';
 })();
 
 class APIClient {
