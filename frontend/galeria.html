@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galería de Evidencias - Sistema de Supervisión</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        * { font-family: 'Inter', sans-serif; }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .gallery-item {
+            break-inside: avoid;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .gallery-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .masonry {
+            column-count: 4;
+            column-gap: 12px;
+        }
+        @media (max-width: 1280px) { .masonry { column-count: 3; } }
+        @media (max-width: 900px)  { .masonry { column-count: 2; } }
+        @media (max-width: 500px)  { .masonry { column-count: 1; } }
+
+        .lightbox-overlay {
+            background: rgba(0,0,0,0.92);
+            backdrop-filter: blur(4px);
+        }
+
+        video::-webkit-media-controls { color: white; }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-50" x-data="{
+    sidebarOpen: false,
+    filter: 'all',
+    lightbox: false,
+    current: null,
+    currentIndex: 0,
+    items: [
+        { type: 'video', src: 'media/2026-05-11_at_13.25.16.mp4', thumb: null, label: 'Video 1' },
+        { type: 'video', src: 'media/2026-05-11_at_13.25.17.mp4', thumb: null, label: 'Video 2' },
+        { type: 'img', src: 'media/2026-05-11_at_13.20.43.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.20.45.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.20.46.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.20.47.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.20.50.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.21.00.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.21.00_1.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.21.01.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.21.02.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.21.02_1.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.21.06.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.21.08.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.21.11.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.21.15.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.21.18.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.10.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.11.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.11_1.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.11_2.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.11_3.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.11_4.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.12.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.12_1.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.12_2.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.12_3.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.12_4.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.13.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.13_1.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.13_2.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.13_3.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.13_4.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.14.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.14_1.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.14_2.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.14_3.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.15.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.15_1.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.15_2.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.15_3.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.15_4.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.16.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.16_1.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.16_2.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.16_3.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.17.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.17_1.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.17_2.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.17_3.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.18.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.18_1.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.18_2.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.18_3.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.19.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.19_1.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.19_2.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.19_3.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.19_4.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.20.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.20_1.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.20_2.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.20_3.jpeg' },
+        { type: 'img', src: 'media/2026-05-11_at_13.25.21.jpeg' }
+    ],
+    get filtered() {
+        if (this.filter === 'all') return this.items;
+        if (this.filter === 'fotos') return this.items.filter(i => i.type === 'img');
+        if (this.filter === 'videos') return this.items.filter(i => i.type === 'video');
+        return this.items;
+    },
+    open(item, index) {
+        this.current = item;
+        this.currentIndex = index;
+        this.lightbox = true;
+        document.body.style.overflow = 'hidden';
+    },
+    close() {
+        this.lightbox = false;
+        this.current = null;
+        document.body.style.overflow = '';
+        // pause any videos
+        document.querySelectorAll('.lightbox-video').forEach(v => v.pause());
+    },
+    prev() {
+        const list = this.filtered;
+        this.currentIndex = (this.currentIndex - 1 + list.length) % list.length;
+        this.current = list[this.currentIndex];
+        document.querySelectorAll('.lightbox-video').forEach(v => v.pause());
+    },
+    next() {
+        const list = this.filtered;
+        this.currentIndex = (this.currentIndex + 1) % list.length;
+        this.current = list[this.currentIndex];
+        document.querySelectorAll('.lightbox-video').forEach(v => v.pause());
+    }
+}" @keydown.escape.window="if(lightbox) close()" @keydown.arrow-left.window="if(lightbox) prev()" @keydown.arrow-right.window="if(lightbox) next()">
+
+    <!-- Sidebar -->
+    <div class="fixed inset-y-0 left-0 z-50 w-64 gradient-bg transform transition-transform duration-300 ease-in-out"
+         :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
+        <div class="flex items-center justify-between p-4 border-b border-white/20">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-eye text-white text-sm"></i>
+                </div>
+                <span class="text-white font-bold text-sm">SupervisiónRT</span>
+            </div>
+            <button @click="sidebarOpen = false" class="text-white/70 hover:text-white">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <nav class="p-4 space-y-1">
+            <a href="index.html" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-white/80 hover:bg-white/20 hover:text-white transition-all">
+                <i class="fas fa-tachometer-alt w-5"></i><span>Dashboard</span>
+            </a>
+            <a href="supervision-tiempo-real.html" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-white/80 hover:bg-white/20 hover:text-white transition-all">
+                <i class="fas fa-broadcast-tower w-5"></i><span>Supervisión en Tiempo Real</span>
+            </a>
+            <a href="registro-evidencias.html" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-white/80 hover:bg-white/20 hover:text-white transition-all">
+                <i class="fas fa-camera w-5"></i><span>Registro de Evidencias</span>
+            </a>
+            <a href="galeria.html" class="flex items-center space-x-3 px-3 py-2 rounded-lg bg-white/20 text-white font-medium transition-all">
+                <i class="fas fa-images w-5"></i><span>Galería</span>
+            </a>
+            <a href="listados.html" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-white/80 hover:bg-white/20 hover:text-white transition-all">
+                <i class="fas fa-list w-5"></i><span>Listados</span>
+            </a>
+            <a href="eventos-capacitacion.html" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-white/80 hover:bg-white/20 hover:text-white transition-all">
+                <i class="fas fa-calendar-alt w-5"></i><span>Eventos y Capacitación</span>
+            </a>
+            <a href="ayuda.html" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-white/80 hover:bg-white/20 hover:text-white transition-all">
+                <i class="fas fa-question-circle w-5"></i><span>Ayuda</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Sidebar overlay -->
+    <div x-show="sidebarOpen" @click="sidebarOpen = false"
+         class="fixed inset-0 z-40 bg-black/50" x-transition.opacity></div>
+
+    <!-- Header -->
+    <header class="gradient-bg shadow-lg sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-4">
+                    <button @click="sidebarOpen = true" class="text-white/80 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-all">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <div class="flex items-center space-x-3">
+                        <div class="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-images text-white"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-white font-bold text-lg leading-none">Galería de Evidencias</h1>
+                            <p class="text-white/60 text-xs">Alto y Bajo Baudó · 11 May 2026</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="text-white/70 text-sm hidden sm:block">
+                        <i class="fas fa-photo-film mr-1"></i>
+                        <span x-text="items.filter(i=>i.type==='img').length"></span> fotos ·
+                        <span x-text="items.filter(i=>i.type==='video').length"></span> videos
+                    </span>
+                    <a href="index.html" class="text-white/80 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-all" title="Dashboard">
+                        <i class="fas fa-home"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Filtros -->
+        <div class="flex items-center space-x-2 mb-8">
+            <button @click="filter='all'"
+                    :class="filter==='all' ? 'active' : 'bg-white text-gray-600 hover:bg-gray-100'"
+                    class="filter-btn px-5 py-2 rounded-full text-sm font-medium border border-gray-200 transition-all shadow-sm">
+                <i class="fas fa-th mr-1"></i> Todos
+                <span class="ml-1 text-xs opacity-70" x-text="'('+items.length+')'"></span>
+            </button>
+            <button @click="filter='fotos'"
+                    :class="filter==='fotos' ? 'active' : 'bg-white text-gray-600 hover:bg-gray-100'"
+                    class="filter-btn px-5 py-2 rounded-full text-sm font-medium border border-gray-200 transition-all shadow-sm">
+                <i class="fas fa-image mr-1"></i> Fotos
+                <span class="ml-1 text-xs opacity-70" x-text="'('+items.filter(i=>i.type==='img').length+')'"></span>
+            </button>
+            <button @click="filter='videos'"
+                    :class="filter==='videos' ? 'active' : 'bg-white text-gray-600 hover:bg-gray-100'"
+                    class="filter-btn px-5 py-2 rounded-full text-sm font-medium border border-gray-200 transition-all shadow-sm">
+                <i class="fas fa-video mr-1"></i> Videos
+                <span class="ml-1 text-xs opacity-70" x-text="'('+items.filter(i=>i.type==='video').length+')'"></span>
+            </button>
+        </div>
+
+        <!-- Videos destacados (solo cuando el filtro los muestra) -->
+        <template x-if="filter === 'all' || filter === 'videos'">
+            <div class="mb-8">
+                <h2 class="text-gray-700 font-semibold text-sm uppercase tracking-wider mb-4">
+                    <i class="fas fa-video text-purple-500 mr-2"></i>Videos
+                </h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <template x-for="(item, idx) in items.filter(i => i.type === 'video')" :key="item.src">
+                        <div class="gallery-item bg-black rounded-2xl overflow-hidden shadow-md cursor-pointer group relative"
+                             @click="open(item, filtered.indexOf(item))">
+                            <video class="w-full max-h-64 object-cover" preload="metadata">
+                                <source :src="item.src" type="video/mp4">
+                            </video>
+                            <div class="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/20 transition-all">
+                                <div class="w-14 h-14 bg-white/90 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                    <i class="fas fa-play text-purple-600 text-xl ml-1"></i>
+                                </div>
+                            </div>
+                            <div class="absolute bottom-3 left-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
+                                <i class="fas fa-video mr-1"></i>
+                                <span x-text="item.label || 'Video'"></span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <!-- Galería masonry de fotos -->
+        <template x-if="filter === 'all' || filter === 'fotos'">
+            <div>
+                <h2 class="text-gray-700 font-semibold text-sm uppercase tracking-wider mb-4">
+                    <i class="fas fa-image text-purple-500 mr-2"></i>Fotografías
+                </h2>
+                <div class="masonry">
+                    <template x-for="(item, idx) in filtered.filter(i => i.type === 'img')" :key="item.src">
+                        <div class="gallery-item mb-3 rounded-xl overflow-hidden shadow-md cursor-pointer group relative"
+                             @click="open(item, filtered.indexOf(item))">
+                            <img :src="item.src" loading="lazy"
+                                 class="w-full block object-cover group-hover:scale-105 transition-transform duration-300"
+                                 :alt="item.src">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+                                <i class="fas fa-search-plus text-white text-lg"></i>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+    </main>
+
+    <!-- Lightbox -->
+    <div x-show="lightbox" x-transition.opacity
+         class="fixed inset-0 z-50 lightbox-overlay flex items-center justify-center"
+         @click.self="close()">
+
+        <!-- Cerrar -->
+        <button @click="close()"
+                class="absolute top-4 right-4 text-white/80 hover:text-white text-3xl z-10 w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-all">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <!-- Prev -->
+        <button @click="prev()"
+                class="absolute left-4 top-1/2 -translate-y-1/2 text-white/80 hover:text-white text-2xl z-10 w-12 h-12 flex items-center justify-center rounded-full hover:bg-white/10 transition-all">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+
+        <!-- Next -->
+        <button @click="next()"
+                class="absolute right-4 top-1/2 -translate-y-1/2 text-white/80 hover:text-white text-2xl z-10 w-12 h-12 flex items-center justify-center rounded-full hover:bg-white/10 transition-all">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+
+        <!-- Contenido -->
+        <div class="max-w-5xl max-h-screen w-full px-16 py-8 flex items-center justify-center">
+            <template x-if="current && current.type === 'img'">
+                <img :src="current.src" class="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl" :alt="current.src">
+            </template>
+            <template x-if="current && current.type === 'video'">
+                <video class="lightbox-video max-w-full max-h-[85vh] rounded-xl shadow-2xl" controls autoplay>
+                    <source :src="current.src" type="video/mp4">
+                </video>
+            </template>
+        </div>
+
+        <!-- Contador -->
+        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/60 text-sm">
+            <span x-text="currentIndex + 1"></span> / <span x-text="filtered.length"></span>
+        </div>
+    </div>
+
+</body>
+</html>
